@@ -6,13 +6,8 @@
 PLAT= none
 
 export CC= gcc
-export CFLAGS= -fno-builtin -O2 -nostdinc -nostdlib -ffreestanding -g -Wall -Wextra \
-	-Werror -MMD -mno-red-zone \
-	-mcmodel=kernel -fno-pie
-export ASFLAGS= $(CFLAGS) -Wa,--divide
-
-# Other utilities.
-RM= rm -f
+export CFLAGS= -O2 -Wall -Wextra -Werror
+export ASFLAGS= -Wa,--divide
 
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
 
@@ -29,11 +24,12 @@ R= $V.1
 all:	$(PLAT)
 
 $(PLATS):
-	cd kernel/ && $(MAKE)
+	$(shell echo "$@" > .cache-arch)
+	@cd kernel/ && $(MAKE) ARCH="$@"
 
 clean:
-	$(RM) $(shell find $(SRC) -name "*.o")
-	$(RM) $(shell find $(SRC) -name "*.d")
+	@cd kernel/ && $(MAKE) ARCH=$(shell cat .cache-arch) $@
+	@rm .cache-arch
 
 test:
 	@echo "TODO"
