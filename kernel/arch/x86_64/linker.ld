@@ -7,21 +7,21 @@ SECTIONS
 
   .boottext :
     {
-      boot.o (.multiboot)
-      boot.o (.text)
+      arch/x86_64/boot.o (.multiboot)
+      arch/x86_64/boot.o (.text)
     }
   .bootrodata :
     {
-      boot.o (.rodata)
+      arch/x86_64/boot.o (.rodata)
     }
   .bootdata :
     {
-      boot.o (.data)
+      arch/x86_64/boot.o (.data)
     }
   .bootbss :
     {
-      boot.o (.bss)
-      boot.o (COMMON)
+      arch/x86_64/boot.o (.bss)
+      arch/x86_64/boot.o (COMMON)
     }
 
   . = ALIGN(0x1000);

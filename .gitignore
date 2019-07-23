@@ -1,0 +1,7 @@
+*.iso
+*.o
+*.d
+*.kernel
+
+.cache-arch
+isodir/

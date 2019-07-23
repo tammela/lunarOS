@@ -9,22 +9,24 @@ KERNDIR:= kernel
 include $(ARCHDIR)/Kbuild
 include $(KERNDIR)/Kbuild
 
-CFLAGS:= $(CFLAGS) -mcmodel=kernel -fno-builtin -fno-pie -no-pie -ffreestanding -mno-red-zone
+FOPS:= -mcmodel=kernel -ffreestanding -mno-red-zone -fno-builtin -fno-pie -no-pie
+CFLAGS:= $(CFLAGS) $(FOPS) -nostdlib -nostdinc
 ASFLAGS:= $(CFLAGS) $(ASFLAGS)
-CPPFLAGS:= $(CPPFLAGS) -D_KERNEL
-LIBS:= $(LIBS) -nostdlib
+CPPFLAGS:= $(CPPFLAGS) -I$(ARCHDIR) -D_KERNEL
+LDFLAGS:= $(LDFLAGS) -Wl,--build-id=none
+LIBS:= $(LIBS)
 
 all: lunar.kernel
 
 lunar.kernel: $(OBJS) $(ARCHDIR)/linker.ld
-	$(CC) -T $(ARCHDIR)/linker.ld -o lunar.kernel $(CFLAGS) $(OBJS)
+	$(CC) -z max-page-size=0x1000 $(CFLAGS) $(LDFLAGS) -T $(ARCHDIR)/linker.ld -o lunar.kernel $(OBJS) $(LIBS)
 	grub-file --is-x86-multiboot2 lunar.kernel
 
 .c.o:
-	$(CC) -MD -c $< -o $@ -std=gnu99 $(CFLAGS) $(CPPFLAGS) $(LIBS)
+	$(CC) -std=gnu99 $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -MD -c $< -o $@ $(LIBS)
 
 .S.o:
-	$(CC) -MD -c $< -o $@ $(CFLAGS) $(CPPFLAGS) $(LIBS)
+	$(CC) $(ASFLAGS) $(CPPFLAGS) $(LDFLAGS) -MD -c $< -o $@ $(LIBS)
 
 clean:
 	rm -f lunar.kernel

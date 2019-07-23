@@ -1,18 +1,18 @@
 #include "boot.h"
 
-.set HDRLEN, (hdrfini - hdrstart)
-.set CHECKSUM, -(MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + HDRLEN)
+.SET HEADER_LENGTH, header_end - header_start
+.SET CHECKSUM, -(0xe85250d6 + 0 + HEADER_LENGTH)
 .section .multiboot
-hdrstart:
-   .long MULTIBOOT2_HEADER_MAGIC
-   .long MULTIBOOT_ARCHITECTURE_I386
-   .long HDRLEN
-   .long CHECKSUM
+header_start:
+    .long 0xe85250d6
+    .long 0
+    .long HEADER_LENGTH
+    .long CHECKSUM
 
-   .short MULTIBOOT_HEADER_TAG_END
-   .short 0    // flags, none set
-   .long 8     // size, including itself (short + short + long)
-hdrfini:
+    .short 0
+    .short 0
+    .long 8
+header_end:
 
 .code32
 

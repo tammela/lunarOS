@@ -31,14 +31,19 @@ clean:
 	@cd kernel/ && $(MAKE) ARCH=$(shell cat .cache-arch) $@
 	@rm .cache-arch
 
-test:
-	@echo "TODO"
+iso:
+	@mkdir -p isodir/boot/grub
+	@cp kernel/lunar.kernel isodir/boot/
+	@cp grub.cfg isodir/boot/grub
+	grub-mkrescue -o lunaros.iso isodir
 
+qemu:
+	qemu-system-$(shell cat .cache-arch) -cdrom lunaros.iso -m 1024M
 none:
 	@echo "Please do 'make PLATFORM' where PLATFORM is one of these:"
 	@echo "   $(PLATS)"
 
 # list targets that do not create files
-.PHONY: all $(PLATS) clean test none
+.PHONY: all $(PLATS) clean qemu none
 
 # (end of Makefile)
