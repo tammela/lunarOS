@@ -6,7 +6,7 @@
 PLAT= none
 
 export CC= gcc
-export CFLAGS= -O2 -Wall -Wextra -Werror
+export CFLAGS= -O2 -Wall -Wextra -Werror -g
 export ASFLAGS= -Wa,--divide
 
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
@@ -38,7 +38,10 @@ iso:
 	grub-mkrescue -o lunaros.iso isodir
 
 qemu:
-	qemu-system-$(shell cat .cache-arch) -cdrom lunaros.iso -m 1024M
+	qemu-system-$(shell cat .cache-arch) -enable-kvm -cpu host -cdrom lunaros.iso -m 1024M
+
+qemu-debug:
+	qemu-system-$(shell cat .cache-arch) -enable-kvm -cpu host -cdrom lunaros.iso -m 1024M -s -S
 none:
 	@echo "Please do 'make PLATFORM' where PLATFORM is one of these:"
 	@echo "   $(PLATS)"

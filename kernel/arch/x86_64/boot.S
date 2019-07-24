@@ -28,7 +28,7 @@ header_end:
    .comm tmp_stack, 0x4000, 0x1000
 
 .data
-.balign GDT_TABLE_ALIGNMENT
+.align 0x1000
 GDTstart:
    .8byte GDT_FIRST_ENTRY
    .8byte GDT_KERNEL_ENTRY
@@ -71,8 +71,8 @@ _start:
    movl $high_pd, %eax
    /* Supervisor is set by default */
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
-   /* HIGH_PDPTR[511] = %eax */
-   movl %eax, high_pdptr + (511 * 8)
+   /* HIGH_PDPTR[510] = %eax */
+   movl %eax, high_pdptr + (510 * 8) /* ??? */
 
    /* ==={ */
    /* map_kernel loop counters */
