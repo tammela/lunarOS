@@ -2,6 +2,7 @@
 
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
 
+INCLUDEDIR:= include/
 ARCHDIR:= arch/$(ARCH)
 KERNDIR:= kernel
 
@@ -10,9 +11,9 @@ include $(ARCHDIR)/Kbuild
 include $(KERNDIR)/Kbuild
 
 FOPS:= -mcmodel=kernel -ffreestanding -mno-red-zone -fno-builtin -fno-pie -no-pie
-CFLAGS:= $(CFLAGS) $(FOPS) -nostdlib -nostdinc
+CFLAGS:= $(CFLAGS) $(FOPS) -nostdlib
 ASFLAGS:= $(CFLAGS) $(ASFLAGS)
-CPPFLAGS:= $(CPPFLAGS) -I$(ARCHDIR) -D_KERNEL
+CPPFLAGS:= $(CPPFLAGS) -I$(INCLUDEDIR) -D_KERNEL
 LDFLAGS:= $(LDFLAGS) -Wl,--build-id=none
 LIBS:= $(LIBS)
 
