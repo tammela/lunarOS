@@ -38,7 +38,7 @@ GDTptr:
    .short GDT_TABLE_SIZE - 1
    .long GDTstart
 
-/* Our bootstrap start function. */
+/* Linker ENTRY */
 .section .text
 .global _start
 .type _start, @function
@@ -46,6 +46,12 @@ _start:
    /* Set up the stack */
    movl $(tmp_stack + 0x4000), %esp
 
+   /* Push the pointer to the Multiboot information structure */
+   pushl %ebx
+   /* Push the magic value */
+   pushl %eax
+
+   /* ==={ */
    /* Populate PML4 */
 
    movl $low_pdptr, %eax
@@ -73,6 +79,7 @@ _start:
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
    /* HIGH_PDPTR[510] = %eax */
    movl %eax, high_pdptr + (510 * 8) /* ??? */
+   /* }=== */
 
    /* ==={ */
    /* map_kernel loop counters */
@@ -97,11 +104,12 @@ map_kernel:
    jne map_kernel
    /* }=== */
 
+   /* ==={ */
    /* Setup pagging */
    movl $pml4, %eax
    movl %eax, %cr3
 
-   /* Activate paging and long mode */
+   /* Activate paging and long mode (must be in this order!) */
    movl $CR4_REG, %eax
    movl %eax, %cr4
 
@@ -112,11 +120,12 @@ map_kernel:
 
    movl $CR0_REG, %eax
    movl %eax, %cr0
+   /* }=== */
 
    /* Load GDT */
    lgdt GDTptr
 
-   /* ljmp using GDT segments */
+   /* ljmp into 64-bit */
    /* Kernel is GDT[1] */
    ljmp $(1 * 8), $_start64
 
