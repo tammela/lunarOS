@@ -6,7 +6,7 @@
 PLAT= none
 
 export CC= gcc
-export CFLAGS= -O2 -Wall -Wextra -Werror -g
+export CFLAGS= -O0 -Wall -Wextra -Werror -g
 export ASFLAGS= -Wa,--divide
 
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
