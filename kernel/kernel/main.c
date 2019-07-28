@@ -1,13 +1,12 @@
-#include <lunaros/stdint.h>
+#include <std/stdint.h>
+
+#include <lunaros/video/tty.h>
+#include <lunaros/printf.h>
 
 void main(uint64_t magic, uint64_t addr) {
-   unsigned char *vga = (unsigned char *)0xb8000;
    ((void)magic);
    ((void)addr);
-
-   vga[0] = '.';
-   vga[1] = 4;
-
-   while (1)
-      ;
+   init_tty();
+   puts("LunarOS Kernel\n");
+   printf("%s\n", "Newline not yet supported.");
 }

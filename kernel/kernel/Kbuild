@@ -1,1 +1,2 @@
-OBJS+= $(KERNDIR)/main.o
+OBJS+= $(KERNDIR)/main.o \
+        $(KERNDIR)/tty.o
