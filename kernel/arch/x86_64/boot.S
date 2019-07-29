@@ -1,15 +1,18 @@
+#define ASM_FILE
+#include <multiboot/multiboot2.h>
+
 #include "boot.h"
 
 .SET HEADER_LENGTH, header_end - header_start
-.SET CHECKSUM, -(0xe85250d6 + 0 + HEADER_LENGTH)
+.SET CHECKSUM, -(MULTIBOOT2_HEADER_MAGIC + MULTIBOOT_ARCHITECTURE_I386 + HEADER_LENGTH)
 .section .multiboot
 header_start:
-    .long 0xe85250d6
-    .long 0
+    .long MULTIBOOT2_HEADER_MAGIC
+    .long MULTIBOOT_ARCHITECTURE_I386
     .long HEADER_LENGTH
     .long CHECKSUM
 
-    .short 0
+    .short MULTIBOOT_HEADER_TAG_END
     .short 0
     .long 8
 header_end:
@@ -121,6 +124,10 @@ map_kernel:
    movl $CR0_REG, %eax
    movl %eax, %cr0
    /* }=== */
+
+   /* Recover multiboot2 parameters */
+   pop %edi
+   pop %esi
 
    /* Load GDT */
    lgdt GDTptr
