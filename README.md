@@ -6,12 +6,11 @@ An exokernel operating system.
 #### Build
 
 ```bash
-make x86_64
-make iso
+make ARCH=x86_64 iso
 ```
 
 #### Testing
 
 ```bash
-make qemu
+make ARCH=x86_64 qemu
 ```

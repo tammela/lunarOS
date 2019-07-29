@@ -2,8 +2,10 @@
 
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
-# Your platform. See PLATS for possible values.
-PLAT= none
+ISO=lunarOS.iso
+
+# Your architecture. See PLATS for possible values.
+ARCH= none
 
 export CC= gcc
 export CFLAGS= -O0 -Wall -Wextra -Werror -g
@@ -21,32 +23,33 @@ V= 0.1
 R= $V.1
 
 # Targets start here.
-all:	$(PLAT)
+all:	$(ARCH)
 
 $(PLATS):
-	$(shell echo "$@" > .cache-arch)
-	@cd kernel/ && $(MAKE) ARCH="$@"
+	@cd kernel/ && $(MAKE)
 
 clean:
-	@cd kernel/ && $(MAKE) ARCH=$(shell cat .cache-arch) $@
-	@rm .cache-arch
+	@cd kernel/ && $(MAKE) $@
+	@rm -rf isodir
 
-iso:
+iso: $(ISO)
+
+$(ISO): $(ARCH)
 	@mkdir -p isodir/boot/grub
 	@cp kernel/lunar.kernel isodir/boot/
 	@cp grub.cfg isodir/boot/grub
-	grub-mkrescue -o lunaros.iso isodir
+	grub-mkrescue -o lunarOS.iso isodir
 
-qemu:
-	qemu-system-$(shell cat .cache-arch) -enable-kvm -cpu host -cdrom lunaros.iso -m 1024M
+qemu: $(ISO)
+	qemu-system-$(shell cat .cache-arch) -enable-kvm -cpu host -cdrom lunarOS.iso -m 1024M
 
-qemu-debug:
+qemu-debug: $(ISO)
 	gdb -x kernel/scripts/kernel-$(shell cat .cache-arch).gdb
 none:
-	@echo "Please do 'make PLATFORM' where PLATFORM is one of these:"
+	@echo "Please do 'make ARCH=PLATFORM' where PLATFORM is one of these:"
 	@echo "   $(PLATS)"
 
 # list targets that do not create files
-.PHONY: all $(PLATS) clean qemu none
+.PHONY: all $(PLATS) clean qemu qemu-debug none
 
 # (end of Makefile)
