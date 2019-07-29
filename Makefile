@@ -41,7 +41,7 @@ qemu:
 	qemu-system-$(shell cat .cache-arch) -enable-kvm -cpu host -cdrom lunaros.iso -m 1024M
 
 qemu-debug:
-	qemu-system-$(shell cat .cache-arch) -enable-kvm -cpu host -cdrom lunaros.iso -m 1024M -s -S
+	gdb -x kernel/scripts/kernel-$(shell cat .cache-arch).gdb
 none:
 	@echo "Please do 'make PLATFORM' where PLATFORM is one of these:"
 	@echo "   $(PLATS)"
