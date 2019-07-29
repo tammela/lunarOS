@@ -1,6 +1,19 @@
 ﻿---
+Language: 'Cpp'
 IndentWidth: '3'
 PointerAlignment: Right
 UseTab: Never
+AlignEscapedNewlines: 'Left'
+AllowShortFunctionsOnASingleLine: 'None'
+AllowShortLoopsOnASingleLine: 'true'
+ColumnLimit: 80
+IncludeBlocks: 'Preserve'
+IndentCaseLabels: 'false'
+IndentPPDirectives: 'None'
+MaxEmptyLinesToKeep: 1
+ReflowComments: 'true'
+SpaceAfterCStyleCast: 'false'
+SpaceBeforeAssignmentOperators: 'true'
+SpaceBeforeParens: 'ControlStatements'
 
 ...
