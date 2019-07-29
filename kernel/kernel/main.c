@@ -8,5 +8,4 @@ void main(uint64_t magic, uint64_t addr) {
    ((void)addr);
    init_tty();
    puts("LunarOS Kernel\n");
-   printf("%s\n", "Newline not yet supported.");
 }

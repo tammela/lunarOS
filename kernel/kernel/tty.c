@@ -23,7 +23,7 @@ static void putchar(char c) {
       newline();
       return;
    }
-   idx = (lines * TTY_MAX_HEIGHT) + columns;
+   idx = (lines * TTY_MAX_WIDTH) + columns;
    video[idx] = c | (0x0F << 8);
    if (++columns >= TTY_MAX_WIDTH)
       newline();
