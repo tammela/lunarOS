@@ -15,5 +15,6 @@
 #endif /* TTY_MAX_HEIGHT */
 
 void init_tty(void);
+void clrscr(void);
 
 #endif /* _TTY_H */

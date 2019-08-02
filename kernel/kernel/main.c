@@ -11,5 +11,7 @@ void main(uint32_t magic, uint32_t addr) {
       printf("Invalid magic number");
       return;
    }
+   clrscr();
    puts("LunarOS Kernel\n");
+   printf("Print several numbers... %x %d %d", 16*16+10, -3, 2*2 + 2 + 1);
 }
