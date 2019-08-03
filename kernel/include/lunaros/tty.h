@@ -19,6 +19,7 @@
 #define DEFAULT_COLOR (0x0F)
 #endif /* DEFAULT_COLOR */
 
+void putchar(char c);
 void cls(void);
 
 #endif /* _TTY_H */
