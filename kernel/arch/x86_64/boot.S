@@ -41,8 +41,14 @@ GDTptr:
    .short GDT_TABLE_SIZE - 1
    .long GDTstart
 
-/* Linker ENTRY */
 .section .text
+halt32:
+   cli
+   hlt
+1:
+   jmp 1b
+
+/* Linker ENTRY */
 .global _start
 .type _start, @function
 _start:
@@ -53,6 +59,14 @@ _start:
    pushl %ebx
    /* Push the magic value */
    pushl %eax
+
+   /* Check if 64-bit is supported */
+   movl $0x80000001, %eax
+   cpuid
+   and $(1 << 29), %edx
+
+   cmp $0, %edx
+   je halt32
 
    /* ==={ */
    /* Populate PML4 */
