@@ -6,15 +6,17 @@
 #include <lunaros/printf.h>
 #include <lunaros/video/tty.h>
 
-static volatile uint16_t *video = NULL;
+static volatile uint16_t *video = (uint16_t *)TTY_MEM_ADDR;
 
 static int32_t columns = 0;
 static int32_t lines = 0;
 
 static void newline(void) {
    columns = 0;
-   if (++lines >= TTY_MAX_HEIGHT)
+   if (++lines >= TTY_MAX_HEIGHT) {
       lines = 0;
+      cls();
+   }
 }
 
 static void putchar(char c) {
@@ -79,8 +81,6 @@ static void fmtnum(uintmax_t value, int base, uint8_t issigned) {
 }
 
 void cls(void) {
-   if (!video)
-      video = (uint16_t *)TTY_MEM_ADDR;
    for (int32_t i = 0; i != TTY_MAX_HEIGHT * TTY_MAX_WIDTH; i++) {
       video[i] = ' ' | (DEFAULT_COLOR << 8);
    }
