@@ -1,8 +1,10 @@
+#include <builtin/cpuid.h>
 #include <multiboot/multiboot2.h>
 #include <std/stdint.h>
 
+#include <lunaros/cpu.h>
 #include <lunaros/printf.h>
-#include <lunaros/video/tty.h>
+#include <lunaros/tty.h>
 
 void main(uint32_t magic, uint32_t addr) {
    ((void)addr);
@@ -12,4 +14,5 @@ void main(uint32_t magic, uint32_t addr) {
       return;
    }
    puts("LunarOS Kernel\n");
+   cpu_init();
 }
