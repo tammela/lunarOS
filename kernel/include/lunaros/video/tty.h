@@ -14,7 +14,11 @@
 #define TTY_MAX_HEIGHT (24)
 #endif /* TTY_MAX_HEIGHT */
 
-void init_tty(void);
-void clrscr(void);
+/* White foreground, black background */
+#ifndef DEFAULT_COLOR
+#define DEFAULT_COLOR (0x0F)
+#endif /* DEFAULT_COLOR */
+
+void cls(void);
 
 #endif /* _TTY_H */
