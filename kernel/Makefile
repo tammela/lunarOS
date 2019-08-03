@@ -24,10 +24,10 @@ lunar.kernel: $(OBJS) $(ARCHDIR)/linker.ld
 	grub-file --is-x86-multiboot2 lunar.kernel
 
 .c.o:
-	$(CC) -std=gnu99 $(CFLAGS) $(CPPFLAGS) $(LDFLAGS) -MD -c $< -o $@ $(LIBS)
+	$(CC) -std=gnu99 $(CFLAGS) $(CFLAGS-$@) $(CPPFLAGS) $(LDFLAGS) -MD -c $< -o $@ $(LIBS)
 
 .S.o:
-	$(CC) $(ASFLAGS) $(CPPFLAGS) $(LDFLAGS) -MD -c $< -o $@ $(LIBS)
+	$(CC) $(ASFLAGS) $(ASFLAGS-$@) $(CPPFLAGS) $(LDFLAGS) -MD -c $< -o $@ $(LIBS)
 
 clean:
 	rm -f lunar.kernel
