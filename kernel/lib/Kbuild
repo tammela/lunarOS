@@ -1,0 +1,4 @@
+OBJS += $(LIBDIR)/printf.o \
+        $(LIBDIR)/puts.o \
+        $(LIBDIR)/strlen.o \
+        $(LIBDIR)/uitoa.o

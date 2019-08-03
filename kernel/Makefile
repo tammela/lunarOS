@@ -5,10 +5,12 @@
 INCLUDEDIR:= include/
 ARCHDIR:= arch/$(ARCH)
 KERNDIR:= kernel
+LIBDIR:= lib
 
 # Defines $(OBJS) for the whole tree!
 include $(ARCHDIR)/Kbuild
 include $(KERNDIR)/Kbuild
+include $(LIBDIR)/Kbuild
 
 FOPS:= -mcmodel=kernel -ffreestanding -mno-red-zone -fno-builtin -fno-pie -no-pie
 CFLAGS:= $(CFLAGS) $(FOPS) -nostdlib
