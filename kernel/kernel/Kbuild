@@ -1,3 +1,4 @@
 OBJS+= $(KERNDIR)/main.o \
        $(KERNDIR)/tty.o \
-       $(KERNDIR)/cpu.o
+       $(KERNDIR)/cpu.o \
+       $(KERNDIR)/irq.o

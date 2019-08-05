@@ -41,7 +41,7 @@ $(ISO): $(ARCH)
 	grub-mkrescue -o lunarOS.iso isodir
 
 qemu: $(ISO)
-	qemu-system-$(shell cat .cache-arch) -enable-kvm -cpu host -cdrom lunarOS.iso -m 1024M
+	qemu-system-$(shell cat .cache-arch) -cpu qemu64 -cdrom lunarOS.iso -m 1024M
 
 qemu-debug: $(ISO)
 	gdb -x kernel/scripts/kernel-$(shell cat .cache-arch).gdb
@@ -50,6 +50,6 @@ none:
 	@echo "   $(PLATS)"
 
 # list targets that do not create files
-.PHONY: all $(PLATS) clean qemu qemu-debug none
+.PHONY: all $(PLATS) clean none
 
 # (end of Makefile)
