@@ -6,6 +6,7 @@
 #include <lunaros/printf.h>
 #include <lunaros/tty.h>
 #include <lunaros/multiboot.h>
+#include <lunaros/pagealloc.h>
 
 void main(uint32_t magic, uint32_t addr) {
    ((void)addr);
@@ -16,5 +17,7 @@ void main(uint32_t magic, uint32_t addr) {
    }
    puts("LunarOS Kernel\n");
    cpu_init();
-   multiboot_print_info(magic, addr);
+   // multiboot_print_info(magic, addr);
+   multiboot_mmap_iterate(magic, addr, &pagealloc_addrange);
+   
 }

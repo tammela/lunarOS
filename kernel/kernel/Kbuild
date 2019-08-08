@@ -2,4 +2,5 @@ OBJS+= $(KERNDIR)/main.o \
        $(KERNDIR)/tty.o \
        $(KERNDIR)/cpu.o \
        $(KERNDIR)/irq.o \
-       $(KERNDIR)/multiboot.o
+       $(KERNDIR)/multiboot.o \
+       $(KERNDIR)/pagealloc.o
