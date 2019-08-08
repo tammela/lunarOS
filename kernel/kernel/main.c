@@ -5,6 +5,7 @@
 #include <lunaros/cpu.h>
 #include <lunaros/printf.h>
 #include <lunaros/tty.h>
+#include <lunaros/multiboot.h>
 
 void main(uint32_t magic, uint32_t addr) {
    ((void)addr);
@@ -15,4 +16,5 @@ void main(uint32_t magic, uint32_t addr) {
    }
    puts("LunarOS Kernel\n");
    cpu_init();
+   multiboot_print_info(magic, addr);
 }
