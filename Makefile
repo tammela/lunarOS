@@ -3,6 +3,7 @@
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
 ISO=lunarOS.iso
+ISODIR=isodir
 
 # Your architecture. See PLATS for possible values.
 ARCH= none
@@ -30,7 +31,8 @@ $(PLATS):
 
 clean:
 	@cd kernel/ && $(MAKE) $@
-	@rm -rf isodir
+	@rm -rf $(ISODIR)
+	@rm -rf $(ISO)
 
 iso: $(ISO)
 

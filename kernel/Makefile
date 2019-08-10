@@ -32,8 +32,8 @@ lunar.kernel: $(OBJS) $(ARCHDIR)/linker.ld
 	$(CC) $(ASFLAGS) $(ASFLAGS-$@) $(CPPFLAGS) $(LDFLAGS) -MD -c $< -o $@ $(LIBS)
 
 clean:
-	rm -f lunar.kernel
-	rm -f $(OBJS) $(OBJS:.o=.d)
+	@rm -f lunar.kernel
+	@rm -f $(OBJS) $(OBJS:.o=.d)
 
 -include $(OBJS:.o=.d)
 
