@@ -7,9 +7,9 @@
 struct idt {
    uint16_t size; /* entries count */
    uint64_t addr; /* starting entry address */
-} __aligned;
+} __packed;
 
-struct idt_descriptor {
+struct gate {
    uint16_t low_addr;   /* low address offset */
    uint16_t selector;   /* segment selector */
    uint8_t ist;         /* interrupt stack table [0..2] */
@@ -20,7 +20,7 @@ struct idt_descriptor {
    uint16_t mid_addr;   /* mid address offset */
    uint32_t high_addr;  /* high address offset */
    uint32_t reserved;   /* reserved */
-} __aligned;
+} __packed;
 
 /* ISR gate types */
 #define INTERRUPT_GATE  (0x0E)
@@ -28,5 +28,8 @@ struct idt_descriptor {
 
 /* Intel manual specifies a maximum of 256 ISRs */
 #define ISR_MAX (256)
+
+void irq_dolegacy(void);
+void irq_init(void);
 
 #endif /* _IRQ_H */
