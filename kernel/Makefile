@@ -15,7 +15,7 @@ include $(LIBDIR)/Kbuild
 FOPS:= -mcmodel=kernel -ffreestanding -mno-red-zone -fno-builtin -fno-pie -no-pie -mgeneral-regs-only
 CFLAGS:= $(CFLAGS) $(FOPS) -nostdlib
 ASFLAGS:= $(CFLAGS) $(ASFLAGS)
-CPPFLAGS:= $(CPPFLAGS) -I$(INCLUDEDIR) -D_KERNEL
+CPPFLAGS:= $(CPPFLAGS) -I$(INCLUDEDIR) -D_KERNEL -DlunarOS_$(ARCH)
 LDFLAGS:= $(LDFLAGS) -Wl,--build-id=none
 LIBS:= $(LIBS)
 
