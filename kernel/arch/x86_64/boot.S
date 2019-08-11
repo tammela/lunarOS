@@ -19,6 +19,10 @@ header_end:
 
 .code32
 
+.global _physical_end
+_physical_end:
+   .zero 4
+
 /* 4-level page walkthrough:
  * PML4 -> PDPTR -> PD -> PT -> Page Frame
  */
@@ -142,6 +146,8 @@ map_kernel:
    /* Recover multiboot2 parameters */
    pop %edi
    pop %esi
+
+   movl $_kernel_physical_end, _physical_end(, 1)
 
    /* Load GDT */
    lgdt GDTptr

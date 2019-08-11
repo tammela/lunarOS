@@ -3,6 +3,8 @@
 #include <std/stdint.h>
 
 #include <lunaros/cpu.h>
+#include <lunaros/multiboot.h>
+#include <lunaros/page.h>
 #include <lunaros/printf.h>
 #include <lunaros/tty.h>
 

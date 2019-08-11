@@ -1,1 +1,3 @@
-OBJS+= $(ARCHDIR)/boot.o
+OBJS += $(ARCHDIR)/boot.o \
+        $(ARCHDIR)/cpu.o \
+        $(ARCHDIR)/irq.o
