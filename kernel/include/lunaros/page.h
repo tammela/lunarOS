@@ -12,7 +12,7 @@ struct page {
 };
 
 void page_init(void *vstart, void *vend);
-void page_addrange(void *start, void *end);
+void page_addrange(uint64_t addr, uint64_t length);
 void page_freerange(void *vstart, void *vend);
 void page_free(void *v);
 

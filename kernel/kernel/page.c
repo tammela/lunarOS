@@ -18,8 +18,31 @@ struct {
    struct page *free; /* single-linked list of free pages */
 } kmem;
 
-void page_addrange(void *start, void *end) {
-   page_freerange(start, end);
+void page_addrange(uint64_t addr, uint64_t length) {
+   uint64_t offset;
+   /* check that the range is not contained in kernel memory section and fix if so */
+   if (addr < (uintptr_t)_physical_end) {
+      offset = ((uintptr_t)_physical_end - addr);
+      if (length <= offset) {
+         /* TEMP CODE: debug only */
+         printf("skipping..\n");
+         return;    
+      }
+
+      addr += offset;
+      length -= offset;
+   }
+
+   /* TEMP CODE: debug only */
+   //printf("0x%x \n ",(uint32_t)_physical_end);
+   printf("ADDING base_addr = 0x%x%x,"
+      " length = 0x%x%x\n",
+      (unsigned)(addr >> 32),
+      (unsigned)(addr & 0xffffffff),
+      (unsigned)(length >> 32),
+      (unsigned)(length & 0xffffffff));
+
+   page_freerange((void *)addr, (void*)(addr + length));
 }
 
 void page_freerange(void *vstart, void *vend) {

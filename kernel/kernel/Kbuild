@@ -4,4 +4,5 @@ OBJS+= $(KERNDIR)/main.o \
        $(KERNDIR)/irq.o \
        $(KERNDIR)/panic.o \
        $(KERNDIR)/multiboot.o \
+       $(KERNDIR)/memlayout.o \
        $(KERNDIR)/page.o

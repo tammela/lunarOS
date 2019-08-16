@@ -21,7 +21,7 @@ header_end:
 
 .global _physical_end
 _physical_end:
-   .zero 4
+   .zero 8
 
 /* 4-level page walkthrough:
  * PML4 -> PDPTR -> PD -> PT -> Page Frame

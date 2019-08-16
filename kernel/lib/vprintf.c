@@ -11,6 +11,8 @@ static void fmtnum(uintmax_t value, int base, uint8_t issigned) {
    char sign = '\0';
    const char *baseprefix = "";
    const intmax_t svalue = value;
+   /* TODO: add support for enabling/disabling prefixes */
+   /*
    switch (base) {
    case 2: {
       baseprefix = "0b";
@@ -25,6 +27,7 @@ static void fmtnum(uintmax_t value, int base, uint8_t issigned) {
       break;
    }
    }
+   */
    if (issigned && svalue < 0) {
       sign = '-';
       uitoa(-svalue, buffer, base);
