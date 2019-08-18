@@ -5,6 +5,9 @@
 #include <lunaros/printf.h>
 #include <lunaros/tty.h>
 
+struct cpu cpu;
+
 void cpu_init(void) {
    cpu_dofeatures();
+   cpu_getinfo(&cpu);
 }
