@@ -34,4 +34,20 @@ static __inline void lidt(struct gate *entries, uint16_t size) {
    asm volatile("lidt %0" ::"r"(idt));
 }
 
+/*
+** Access the MSR registers
+*/
+static __inline void msr(uint32_t ecx, uint32_t *eax, uint32_t *edx) {
+   uint32_t outa, outd;
+   asm volatile("movl %2, %%ecx;"
+                "rdmsr;"
+                "movl %%eax, %0;"
+                "movl %%edx, %1;"
+                : "=m"(outa), "=m"(outd)
+                : "r"(ecx)
+   );
+   *eax = outa;
+   *edx = outd;
+}
+
 #endif /* _X86_H */

@@ -29,6 +29,7 @@ struct gate {
 /* Intel manual specifies a maximum of 256 ISRs */
 #define ISR_MAX (256)
 
+int irq_setuparch(void);
 void irq_dolegacy(void);
 void irq_init(void);
 
