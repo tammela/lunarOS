@@ -23,16 +23,13 @@ header_end:
 _physical_end:
    .zero 4
 
-/* 4-level page walkthrough:
- * PML4 -> PDPTR -> PD -> PT -> Page Frame
- */
 .section .bss
    .comm pml4, 0x1000, 0x1000
    .comm low_pdptr, 0x1000, 0x1000
    .comm high_pdptr, 0x1000, 0x1000
    .comm high_pd, 0x1000, 0x1000
    .comm low_pd, 0x1000, 0x1000
-   .comm tmp_stack, 0x4000, 0x1000
+   .comm stack, 0x4000, 0x1000
 
 .data
 .align 0x1000
@@ -46,64 +43,45 @@ GDTptr:
    .long GDTstart
 
 .section .text
-halt32:
-   cli
-   hlt
-1:
-   jmp 1b
 
-/* Linker ENTRY */
-.global _start
-.type _start, @function
-_start:
-   /* Set up the stack */
-   movl $(tmp_stack + 0x4000), %esp
-
-   /* Push the pointer to the Multiboot information structure */
-   pushl %ebx
-   /* Push the magic value */
-   pushl %eax
-
-   /* Check if 64-bit is supported */
-   movl $0x80000001, %eax
-   cpuid
-   and $(1 << 29), %edx
-
-   cmp $0, %edx
-   je halt32
-
-   /* ==={ */
-   /* Populate PML4 */
+.local page_init
+.type page_init, @function
+page_init:
+   pushl   %ebp
+   movl    %esp, %ebp
+   subl    $8, %esp
 
    movl $low_pdptr, %eax
-   /* Supervisor is set by default */
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
    /* PML4[0] = %eax */
    movl %eax, pml4 + 0
 
    movl $high_pdptr, %eax
-   /* Supervisor is set by default */
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
    /* PML4[511] = %eax */
    movl %eax, pml4 + (511 * 8)
 
-   /* Populate PD */
-
    movl $low_pd, %eax
-   /* Supervisor is set by default */
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
    /* LOW_PDPTR[0] = %eax */
    movl %eax, low_pdptr + 0
 
    movl $high_pd, %eax
-   /* Supervisor is set by default */
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
    /* HIGH_PDPTR[510] = %eax */
-   movl %eax, high_pdptr + (510 * 8) /* ??? */
-   /* }=== */
+   movl %eax, high_pdptr + (510 * 8)
 
-   /* ==={ */
-   /* map_kernel loop counters */
+   leave
+   ret
+
+.local mmap_kernel
+.type mmap_kernel, @function
+mmap_kernel:
+   pushl   %ebp
+   movl    %esp, %ebp
+   subl    $8, %esp
+
+   /* loop counters */
    movl $0, %ecx
    movl $_kernel_physical_end, %esi
    /* We will initially map the kernel in 2MiB pages */
@@ -115,7 +93,6 @@ _start:
 map_kernel:
    movl $(1 << 21), %eax
    mul %ecx
-   /* Supervisor is set by default */
    orl $(MMU_PRESENT | MMU_WRITABLE | MMU_PD_2MiB), %eax
    movl %eax, low_pd(, %ecx, 8)
    movl %eax, high_pd(, %ecx, 8)
@@ -123,9 +100,17 @@ map_kernel:
    inc %ecx
    cmp %esi, %ecx
    jne map_kernel
-   /* }=== */
 
-   /* ==={ */
+   leave
+   ret
+
+.local cpu_setpaging
+.type cpu_setpaging, @function
+cpu_setpaging:
+   pushl   %ebp
+   movl    %esp, %ebp
+   subl    $8, %esp
+
    /* Setup pagging */
    movl $pml4, %eax
    movl %eax, %cr3
@@ -141,7 +126,37 @@ map_kernel:
 
    movl $CR0_REG, %eax
    movl %eax, %cr0
-   /* }=== */
+
+   leave
+   ret
+
+halt32:
+   cli
+   hlt
+1:
+   jmp 1b
+
+/* Linker ENTRY */
+.global _start
+.type _start, @function
+_start:
+   movl $(stack + 0x4000), %esp
+
+   /* Save the Multiboot information structure */
+   pushl %ebx
+   pushl %eax
+
+   /* Check if 64-bit is supported */
+   movl $0x80000001, %eax
+   cpuid
+   and $(1 << 29), %edx
+
+   cmp $0, %edx
+   je halt32
+
+   call page_init
+   call mmap_kernel
+   call cpu_setpaging
 
    /* Recover multiboot2 parameters */
    pop %edi
@@ -149,12 +164,10 @@ map_kernel:
 
    movl $_kernel_physical_end, _physical_end(, 1)
 
-   /* Load GDT */
    lgdt GDTptr
 
-   /* ljmp into 64-bit */
-   /* Kernel is GDT[1] */
-   ljmp $(1 * 8), $_start64
+   /* jump into 64-bit */
+   ljmp $8, $_start64
 
 .code64
 
@@ -171,7 +184,6 @@ _start64:
 
    call main
 
-   /* Never happens */
    cli
    hlt
 1:
