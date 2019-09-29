@@ -1,5 +1,7 @@
 # Makefile for compiling the LunarOS Kernel
 
+CFLAGS+= -flto
+
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
 
 INCLUDEDIR:= include/

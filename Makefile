@@ -9,7 +9,7 @@ ISODIR=isodir
 ARCH= none
 
 export CC= gcc
-export CFLAGS= -O0 -Wall -Wextra -Werror -g
+export CFLAGS= -Og -Wall -Wextra -Werror
 export ASFLAGS= -Wa,--divide
 
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
