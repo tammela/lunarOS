@@ -1,4 +1,4 @@
-# Makefile for compiling the LunarOS Kernel
+# Makefile for compiling LunarOS
 
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
@@ -34,22 +34,25 @@ clean:
 	@rm -rf $(ISODIR)
 	@rm -rf $(ISO)
 
+$(ISODIR):
+	@mkdir -p $@/boot/grub
+	@cp grub.cfg $@/boot/grub
+
+$(ISO): $(ARCH) $(ISODIR)
+	@cp kernel/lunar.kernel $(ISODIR)/boot/
+	@grub-mkrescue -o $(ISO) $(ISODIR)
+
 iso: $(ISO)
 
-$(ISO): $(ARCH)
-	@mkdir -p isodir/boot/grub
-	@cp kernel/lunar.kernel isodir/boot/
-	@cp grub.cfg isodir/boot/grub
-	grub-mkrescue -o lunarOS.iso isodir
+qemu: iso
+	qemu-system-$(ARCH) -cpu qemu64 -cdrom lunarOS.iso -m 1024M
 
-qemu: $(ISO)
-	qemu-system-$(shell cat .cache-arch) -cpu qemu64 -cdrom lunarOS.iso -m 1024M
-
-qemu-debug: $(ISO)
-	gdb -x kernel/scripts/kernel-$(shell cat .cache-arch).gdb
+qemu-debug: iso
+	gdb -x kernel/scripts/kernel-$(ARCH).gdb
 none:
 	@echo "Please do 'make ARCH=PLATFORM' where PLATFORM is one of these:"
 	@echo "   $(PLATS)"
+	@exit 1
 
 # list targets that do not create files
 .PHONY: all $(PLATS) clean none
