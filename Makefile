@@ -9,7 +9,7 @@ ISODIR=isodir
 ARCH= none
 
 export CC= gcc
-export CFLAGS= -Og -Wall -Wextra -Werror
+export CFLAGS= -Og -Wall -Wextra -Werror -g
 export ASFLAGS= -Wa,--divide
 
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======
@@ -30,7 +30,7 @@ $(PLATS):
 	@cd kernel/ && $(MAKE)
 
 clean:
-	@cd kernel/ && $(MAKE) $@
+	cd kernel/ && $(MAKE) $@
 	@rm -rf $(ISODIR)
 	@rm -rf $(ISO)
 

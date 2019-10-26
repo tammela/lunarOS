@@ -35,7 +35,7 @@ lunar.kernel: $(OBJS) $(ARCHDIR)/linker.ld
 
 clean:
 	@rm -f lunar.kernel
-	@rm -f $(OBJS) $(OBJS:.o=.d)
+	rm -f $(OBJS) $(OBJS:.o=.d)
 
 -include $(OBJS:.o=.d)
 
