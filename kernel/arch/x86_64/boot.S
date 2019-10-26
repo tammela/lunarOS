@@ -25,10 +25,10 @@ _physical_end:
 
 .section .bss
    .comm pml4, 0x1000, 0x1000
-   .comm low_pdptr, 0x1000, 0x1000
-   .comm high_pdptr, 0x1000, 0x1000
-   .comm high_pd, 0x1000, 0x1000
-   .comm low_pd, 0x1000, 0x1000
+   .comm low_pdpte, 0x1000, 0x1000
+   .comm high_pdpte, 0x1000, 0x1000
+   .comm high_pde, 0x1000, 0x1000
+   .comm low_pde, 0x1000, 0x1000
    .comm stack, 0x4000, 0x1000
 
 .data
@@ -51,25 +51,25 @@ page_init:
    movl    %esp, %ebp
    subl    $8, %esp
 
-   movl $low_pdptr, %eax
+   movl $low_pdpte, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
    /* PML4[0] = %eax */
    movl %eax, pml4 + 0
 
-   movl $high_pdptr, %eax
+   movl $high_pdpte, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
    /* PML4[511] = %eax */
    movl %eax, pml4 + (511 * 8)
 
-   movl $low_pd, %eax
+   movl $low_pde, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
-   /* LOW_PDPTR[0] = %eax */
-   movl %eax, low_pdptr + 0
+   /* LOW_PDPTE[0] = %eax */
+   movl %eax, low_pdpte + 0
 
-   movl $high_pd, %eax
+   movl $high_pde, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
-   /* HIGH_PDPTR[510] = %eax */
-   movl %eax, high_pdptr + (510 * 8)
+   /* HIGH_PDPTE[510] = %eax */
+   movl %eax, high_pdpte + (510 * 8)
 
    leave
    ret
@@ -94,8 +94,8 @@ map_kernel:
    movl $(1 << 21), %eax
    mul %ecx
    orl $(MMU_PRESENT | MMU_WRITABLE | MMU_PD_2MiB), %eax
-   movl %eax, low_pd(, %ecx, 8)
-   movl %eax, high_pd(, %ecx, 8)
+   movl %eax, low_pde(, %ecx, 8)
+   movl %eax, high_pde(, %ecx, 8)
 
    inc %ecx
    cmp %esi, %ecx
