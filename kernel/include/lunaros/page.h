@@ -1,8 +1,6 @@
 #ifndef _PAGE_H
 #define _PAGE_H
 
-#include <std/stdint.h>
-
 #define PGSIZE         (4096)
 #define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
 #define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
