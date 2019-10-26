@@ -12,10 +12,6 @@ static void fmtnum(uintmax_t value, int base, uint8_t issigned) {
    const char *baseprefix = "";
    const intmax_t svalue = value;
    switch (base) {
-   case 2: {
-      baseprefix = "0b";
-      break;
-   }
    case 8: {
       baseprefix = "0";
       break;
@@ -37,6 +33,56 @@ static void fmtnum(uintmax_t value, int base, uint8_t issigned) {
    puts(buffer);
 }
 
+void fmtnum64(const char *fmt, va_list args) {
+   switch (*fmt) {
+   case 'd':
+   case 'i': {
+      fmtnum(va_arg(args, uint64_t), 10, 1);
+      break;
+   }
+   case 'o': {
+      fmtnum(va_arg(args, uint64_t), 8, 0);
+      break;
+   }
+   case 'x': {
+      fmtnum(va_arg(args, uint64_t), 16, 0);
+      break;
+   }
+   case 'u': {
+      fmtnum(va_arg(args, uint64_t), 10, 0);
+      break;
+   }
+   default: {
+      break;
+   }
+   }
+}
+
+void fmtnum32(const char *fmt, va_list args) {
+   switch (*fmt) {
+   case 'd':
+   case 'i': {
+      fmtnum(va_arg(args, int32_t), 10, 1);
+      break;
+   }
+   case 'o': {
+      fmtnum(va_arg(args, uint32_t), 8, 0);
+      break;
+   }
+   case 'x': {
+      fmtnum(va_arg(args, uint32_t), 16, 0);
+      break;
+   }
+   case 'u': {
+      fmtnum(va_arg(args, uint32_t), 10, 0);
+      break;
+   }
+   default: {
+      break;
+   }
+   }
+}
+
 void vprintf(const char *fmt, va_list args) {
    char c;
    while ((c = *fmt++) != '\0') {
@@ -44,6 +90,11 @@ void vprintf(const char *fmt, va_list args) {
          putchar(c);
       else
          switch (*fmt++) {
+         case 'l': {
+            fmtnum64(fmt, args);
+            fmt++;
+            break;
+         }
          case 's': {
             char *p = va_arg(args, char *);
             if (!p)
@@ -52,20 +103,11 @@ void vprintf(const char *fmt, va_list args) {
             break;
          }
          case 'd':
-         case 'i': {
-            fmtnum(va_arg(args, int), 10, 1);
-            break;
-         }
-         case 'o': {
-            fmtnum(va_arg(args, unsigned int), 8, 0);
-            break;
-         }
-         case 'x': {
-            fmtnum(va_arg(args, unsigned int), 16, 0);
-            break;
-         }
+         case 'i':
+         case 'o':
+         case 'x':
          case 'u': {
-            fmtnum(va_arg(args, unsigned int), 10, 0);
+            fmtnum32(fmt, args);
             break;
          }
          default: {
