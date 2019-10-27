@@ -13,7 +13,7 @@ extern struct cpu cpu;  /* CPU info */
 #define IO_PIC1 (0x20)  /* Master PIC base */
 #define IO_PIC2 (0xA0)  /* Slave PIC base */
 
-volatile uintptr_t lapic; /* Defined in lapic_search() */
+volatile uint32_t *lapic; /* Defined in lapic_search() */
 
 /*
 ** Disable all legacy features, like PIC.
@@ -27,19 +27,20 @@ void irq_dolegacy(void) {
 #define MSR_APIC_BASE (0x1B)
 
 int lapic_search(void) {
+   uint64_t ptr;
    uint32_t eax = 0, edx = 0, mask = 0, shl = 0;
    uint32_t remaining;
    msr(MSR_APIC_BASE, &eax, &edx);
-   lapic = (eax & 0XFFFFF000); /* fixed 20 bits */
+   ptr = (eax & 0XFFFFF000); /* fixed 20 bits */
    remaining = cpu.pmax - 20;
    while (remaining && edx) { /* build mask for remaining bits */
       mask |= (1 << shl);
       remaining--;
       shl++;
    }
-   lapic |= ((uintptr_t)(edx & mask)) << 32;
+   ptr |= ((uint64_t)(edx & mask)) << 32;
    /* Intel manual says lapic is always mapped to 0xFEE00000 in physical mem */
-   return ((void *)lapic) != NULL;
+   return !!(lapic = (uint32_t *)ptr);
    /* TODO: map lapic to strong uncacheable virtual map */
 }
 
@@ -75,8 +76,8 @@ int lapic_search(void) {
 #define TDCR    (0x03E0/4)      /* Timer Divide Configuration */
 
 static void lapicw(int idx, int v) {
-   ((uint32_t *)lapic)[idx] = v;
-   (void)((uint32_t *)lapic)[ID]; /* wait write to finish */
+   lapic[idx] = v;
+   (void)(lapic[ID]); /* wait write to finish */
 }
 
 /*
