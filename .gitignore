@@ -3,5 +3,4 @@
 *.d
 *.kernel
 
-.cache-arch
-isodir/
+.buildiso/

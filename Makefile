@@ -3,7 +3,7 @@
 # == CHANGE THE SETTINGS BELOW TO SUIT YOUR ENVIRONMENT =======================
 
 ISO=lunarOS.iso
-ISODIR=isodir
+ISODIR=.buildiso
 
 # Your architecture. See PLATS for possible values.
 ARCH= none
@@ -36,7 +36,7 @@ clean:
 
 $(ISODIR):
 	@mkdir -p $@/boot/grub
-	@cp grub.cfg $@/boot/grub
+	@cp $(SRC)/iso/grub.cfg $@/boot/grub
 
 $(ISO): $(ARCH) $(ISODIR)
 	@cp kernel/lunar.kernel $(ISODIR)/boot/
