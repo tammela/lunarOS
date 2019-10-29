@@ -8,6 +8,7 @@
 struct cpu cpu;
 
 void cpu_init(void) {
-   cpu_dofeatures();
+   cpu_checkfeatures();
    cpu_getinfo(&cpu);
+   cpu_setupmem();
 }

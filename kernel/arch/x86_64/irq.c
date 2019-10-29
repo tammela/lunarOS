@@ -6,6 +6,8 @@
 #include <lunaros/kernel.h>
 #include <lunaros/x86.h>
 
+#include <arch/x86/msr.h>
+
 #include "traps.h"
 
 extern struct cpu cpu;  /* CPU info */
@@ -13,7 +15,7 @@ extern struct cpu cpu;  /* CPU info */
 #define IO_PIC1 (0x20)  /* Master PIC base */
 #define IO_PIC2 (0xA0)  /* Slave PIC base */
 
-volatile uint32_t *lapic; /* Defined in lapic_search() */
+volatile uint32_t *lapic;
 
 /*
 ** Disable all legacy features, like PIC.
@@ -24,23 +26,21 @@ void irq_dolegacy(void) {
    outb(IO_PIC2 + 1, 0xFF);
 }
 
-#define MSR_APIC_BASE (0x1B)
-
 int lapic_search(void) {
-   uint64_t ptr;
-   uint32_t eax = 0, edx = 0, mask = 0, shl = 0;
-   uint32_t remaining;
-   msr(MSR_APIC_BASE, &eax, &edx);
-   ptr = (eax & 0XFFFFF000); /* fixed 20 bits */
-   remaining = cpu.pmax - 20;
-   while (remaining && edx) { /* build mask for remaining bits */
-      mask |= (1 << shl);
+   uint32_t low, high;
+   uint32_t mask = 1;
+   rdmsr(IA32_APIC_BASE, &low, &high);
+   uint64_t addr = low & 0xFFFFF000; /* fixed 20 bits in lower part */
+   uint32_t remaining = cpu.pmax - 20;
+   /* max physical address is variable */
+   while (high && remaining) {
+      mask <<= 1;
+      mask ^= 1;
       remaining--;
-      shl++;
    }
-   ptr |= ((uint64_t)(edx & mask)) << 32;
+   addr |= ((uint64_t)(high & mask)) << 32;
    /* Intel manual says lapic is always mapped to 0xFEE00000 in physical mem */
-   return !!(lapic = (uint32_t *)ptr);
+   return !!(lapic = (uint32_t *)addr);
    /* TODO: map lapic to strong uncacheable virtual map */
 }
 
