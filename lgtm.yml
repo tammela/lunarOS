@@ -1,0 +1,10 @@
+extraction:
+  cpp:
+    prepare:
+      packages:
+        - build-essential
+    after_prepare:
+      - export GNU_MAKE=make
+    index:
+      build_command:
+        - $GNU_MAKE ARCH=x86_64
