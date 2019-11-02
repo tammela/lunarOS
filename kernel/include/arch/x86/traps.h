@@ -1,5 +1,4 @@
-#ifndef _x86_TRAPS_H
-#define _x86_TRAPS_H
+#pragma once
 
 /* x86 traps and irqs numbers - from xv6 */
 
@@ -34,5 +33,3 @@
 #define IRQ_IDE         14
 #define IRQ_ERROR       19
 #define IRQ_SPURIOUS    31
-
-#endif

@@ -2,8 +2,9 @@
 
 #include <std/stddef.h>
 
-#include <lunaros/irq.h>
 #include <lunaros/compiler.h>
+
+#include <arch/x86/irq.h>
 
 static __inline void outb(uint16_t port, uint8_t val) {
    asm volatile("outb %0, %1" ::"a"(val), "Nd"(port));
