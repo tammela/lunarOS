@@ -1,5 +1,4 @@
-#ifndef _X86_H
-#define _X86_H
+#pragma once
 
 #include <std/stddef.h>
 
@@ -50,5 +49,3 @@ static __inline void wrmsr(uint32_t reg, uint64_t val) {
                 : "c"(reg), "a"(ina), "d"(ind)
    );
 }
-
-#endif /* _X86_H */

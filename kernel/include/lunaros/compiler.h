@@ -1,5 +1,4 @@
-#ifndef _COMPILER_H
-#define _COMPILER_H
+#pragma once
 
 /* Juice up the branch predictor */
 #define likely(x)       (__builtin_expect(((x) != 0), 1))
@@ -12,5 +11,3 @@
 #define __noreturn      __attribute__((noreturn))
 #define __packed        __attribute__((packed))
 #define __printf(a, b)  __attribute__((format(printf, 1, 2)))
-
-#endif /* _COMPILER_H */
