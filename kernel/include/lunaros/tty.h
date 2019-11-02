@@ -1,5 +1,4 @@
-#ifndef _TTY_H
-#define _TTY_H
+#pragma once
 
 /* Video memory address */
 #ifndef TTY_MEM_ADDR
@@ -21,5 +20,3 @@
 
 void putchar(char c);
 void cls(void);
-
-#endif /* _TTY_H */

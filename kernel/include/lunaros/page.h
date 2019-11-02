@@ -1,5 +1,4 @@
-#ifndef _PAGE_H
-#define _PAGE_H
+#pragma once
 
 #define PGSIZE         (4096)
 #define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
@@ -18,5 +17,3 @@ void page_free(void *v);
 ** Page returned is not mapped!!
 */
 void *page_alloc(void);
-
-#endif /* _PAGE_H */

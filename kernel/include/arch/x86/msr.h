@@ -1,5 +1,4 @@
-#ifndef _MSR_H
-#define _MSR_H
+#pragma once
 
 enum {
    IA32_APIC_BASE = 27,
@@ -25,5 +24,3 @@ enum {
    IA32_MTRR_PHYSMASK9 = 531,
    IA32_MTRR_DEF_TYPE = 767,
 };
-
-#endif /* _MSR_H */

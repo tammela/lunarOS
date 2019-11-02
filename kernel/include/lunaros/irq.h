@@ -1,5 +1,4 @@
-#ifndef _IRQ_H
-#define _IRQ_H
+#pragma once
 
 #include <std/stdint.h>
 #include <lunaros/compiler.h>
@@ -32,5 +31,3 @@ struct gate {
 int irq_setuparch(void);
 void irq_dolegacy(void);
 void irq_init(void);
-
-#endif /* _IRQ_H */

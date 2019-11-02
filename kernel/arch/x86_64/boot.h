@@ -1,5 +1,4 @@
-#ifndef _BOOT_H
-#define _BOOT_H
+#pragma once
 
 /* Known addresses */
 #define KERNEL_PHYSICAL_START (0x0000000000400000)
@@ -55,4 +54,3 @@
 /* Long Mode */
 #define MSR_EFER_LM (1 << 8)
 
-#endif
