@@ -1,7 +1,7 @@
 #pragma once
 
-#include <std/stdint.h>
 #include <std/stdarg.h>
+#include <std/stdint.h>
 
 #include <lunaros/compiler.h>
 

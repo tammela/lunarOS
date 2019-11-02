@@ -2,14 +2,14 @@
 #include <std/stddef.h>
 #include <std/stdint.h>
 
-#include <lunaros/kernel.h>
 #include <lunaros/compiler.h>
+#include <lunaros/cpu.h>
+#include <lunaros/kernel.h>
 #include <lunaros/printf.h>
 #include <lunaros/x86.h>
-#include <lunaros/cpu.h>
 
-#include <arch/x86/mtrr.h>
 #include <arch/x86/msr.h>
+#include <arch/x86/mtrr.h>
 
 #define CPUID_MIN_EXT_LEAF (0x80000008)
 
