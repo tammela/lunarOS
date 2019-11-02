@@ -1,8 +1,8 @@
 #pragma once
 
 struct cpu {
-   uint8_t pmax;      /* maximum physical address in bits */
-   uint8_t lmax;      /* maximum virtual address in bits */
+   uint8_t pmax; /* maximum physical address in bits */
+   uint8_t lmax; /* maximum virtual address in bits */
 };
 
 void cpu_checkfeatures(void);

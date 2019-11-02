@@ -1,5 +1,5 @@
-#include <std/stdint.h>
 #include <std/stddef.h>
+#include <std/stdint.h>
 
 #include <lunaros/compiler.h>
 #include <lunaros/cpu.h>
@@ -7,17 +7,17 @@
 #include <lunaros/kernel.h>
 #include <lunaros/x86.h>
 
-#include <arch/x86/msr.h>
 #include <arch/x86/irq.h>
+#include <arch/x86/msr.h>
 #include <arch/x86/traps.h>
 
 /* IDT table entries */
 static struct gate entries[ISR_MAX] = {0};
 
-extern struct cpu cpu;  /* CPU info */
+extern struct cpu cpu; /* CPU info */
 
-#define IO_PIC1 (0x20)  /* Master PIC base */
-#define IO_PIC2 (0xA0)  /* Slave PIC base */
+#define IO_PIC1 (0x20) /* Master PIC base */
+#define IO_PIC2 (0xA0) /* Slave PIC base */
 
 volatile uint32_t *lapic;
 

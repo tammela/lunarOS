@@ -1,11 +1,11 @@
 #pragma once
 
-#define PGSIZE         (4096)
-#define PGROUNDUP(sz)  (((sz)+PGSIZE-1) & ~(PGSIZE-1))
-#define PGROUNDDOWN(a) (((a)) & ~(PGSIZE-1))
+#define PGSIZE (4096)
+#define PGROUNDUP(sz) (((sz) + PGSIZE - 1) & ~(PGSIZE - 1))
+#define PGROUNDDOWN(a) (((a)) & ~(PGSIZE - 1))
 
 struct page {
-   struct page *next;   /* next free page (might not be linear) */
+   struct page *next; /* next free page (might not be linear) */
 };
 
 void page_init(void *vstart, void *vend);

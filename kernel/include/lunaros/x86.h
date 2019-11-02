@@ -35,18 +35,12 @@ static __inline void lidt(struct gate *entries, uint16_t size) {
 }
 
 static __inline void rdmsr(uint32_t reg, uint32_t *low, uint32_t *high) {
-   asm volatile("rdmsr"
-                : "=a"(*low), "=d"(*high)
-                : "c"(reg)
-   );
+   asm volatile("rdmsr" : "=a"(*low), "=d"(*high) : "c"(reg));
 }
 
 static __inline void wrmsr(uint32_t reg, uint64_t val) {
    uint32_t ina, ind;
    ina = val & 0xFFFFFFFF;
    ind = val & (0xFFFFFFFFll << 32);
-   asm volatile("wrmsr"
-                :
-                : "c"(reg), "a"(ina), "d"(ind)
-   );
+   asm volatile("wrmsr" : : "c"(reg), "a"(ina), "d"(ind));
 }
