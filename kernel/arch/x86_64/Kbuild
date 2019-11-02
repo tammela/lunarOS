@@ -1,3 +1,15 @@
+#
+# Architecture specific checks done after linking, image name is passed
+#
+define ARCH_CHECKS
+        grub-file --is-x86-multiboot2 $(1)
+endef
+
+#
+# Kernel image is aligned to 4K pages
+#
+LDFLAGS+= -z max-page-size=0x1000
+
 OBJS += $(ARCHDIR)/boot.o \
         $(ARCHDIR)/cpu.o \
         $(ARCHDIR)/irq.o
