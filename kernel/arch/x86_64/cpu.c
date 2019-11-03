@@ -6,6 +6,7 @@
 #include <lunaros/cpu.h>
 #include <lunaros/kernel.h>
 #include <lunaros/printf.h>
+#include <lunaros/string.h>
 #include <lunaros/x86.h>
 
 #include <arch/x86/msr.h>
@@ -52,12 +53,18 @@ static __inline int cpuid_haspat(void) {
    return 0;
 }
 
-static __inline void cpu_brand(void) {
+static __inline int cpu_brand(void) {
    uint32_t eax, ebx, ecx, edx;
-   if (__get_cpuid(0x0, &eax, &ebx, &ecx, &edx))
-      printf("%s%s%s\n", (char *)&ebx, (char *)&edx, (char *)&ecx);
-   else
-      panic("CPUID not supported");
+   char str[13];
+   if (__get_cpuid(0x0, &eax, &ebx, &ecx, &edx)) {
+      memcpy(str, &ebx, 4);
+      memcpy(str + 4, &edx, 4);
+      memcpy(str + 8, &ecx, 4);
+      str[12] = '\0';
+      printf("%s\n", str);
+      return 1;
+   }
+   return 0;
 }
 
 void cpu_getinfo(struct cpu *cpu) {
@@ -104,7 +111,8 @@ void cpu_setupmem(void) {
 ** Can't boot without these...
 */
 void cpu_checkfeatures(void) {
-   cpu_brand();
+   if (unlikely(!cpu_brand()))
+      panic("CPUID not supported");
    if (unlikely(!cpuid_maxext()))
       panic("Extended cpuid information lacks crucial leafs");
    if (unlikely(!cpuid_hasapic()))
