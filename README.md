@@ -26,3 +26,4 @@ LunarOS borrows code from the following sources:
 - xv6-public
 - OSDev wiki
 - Multiboot2 specification
+- NetBSD
