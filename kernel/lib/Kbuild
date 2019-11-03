@@ -1,5 +1,4 @@
 OBJS += $(LIBDIR)/printf.o \
         $(LIBDIR)/vprintf.o \
         $(LIBDIR)/puts.o \
-        $(LIBDIR)/strlen.o \
         $(LIBDIR)/uitoa.o
