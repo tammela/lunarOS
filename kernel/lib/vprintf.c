@@ -89,10 +89,14 @@ void vprintf(const char *fmt, va_list args) {
       if (c != '%')
          putchar(c);
       else
-         switch (*fmt++) {
+         switch (*fmt) {
          case 'l': {
-            fmtnum64(fmt, args);
-            fmt++;
+            if (*(fmt + 1) != 'l')
+               fmtnum64(++fmt, args);
+            else {
+               fmt += 2; /* skip 'll' */
+               fmtnum64(fmt++, args);
+            }
             break;
          }
          case 's': {
@@ -100,6 +104,7 @@ void vprintf(const char *fmt, va_list args) {
             if (!p)
                p = "(null)";
             puts(p);
+            fmt++;
             break;
          }
          case 'd':
@@ -107,7 +112,7 @@ void vprintf(const char *fmt, va_list args) {
          case 'o':
          case 'x':
          case 'u': {
-            fmtnum32(fmt, args);
+            fmtnum32(fmt++, args);
             break;
          }
          default: {
