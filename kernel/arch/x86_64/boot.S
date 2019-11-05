@@ -162,7 +162,6 @@ _start:
    pop %edi
    pop %esi
 
-   movl $_kernel_physical_end, _physical_end(, 1)
 
    lgdt GDTptr
 
@@ -181,6 +180,9 @@ _start64:
    movw %ax, %fs
    movw %ax, %gs
    movw %ax, %ss
+
+   movq $_kernel_physical_end, %r10
+   movq %r10, (_physical_end)
 
    call main
 
