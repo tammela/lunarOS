@@ -1,12 +1,12 @@
 #include <builtin/cpuid.h>
 #include <std/stddef.h>
 #include <std/stdint.h>
+#include <std/string.h>
 
 #include <lunaros/compiler.h>
 #include <lunaros/cpu.h>
 #include <lunaros/kernel.h>
 #include <lunaros/printf.h>
-#include <lunaros/string.h>
 #include <lunaros/x86.h>
 
 #include <arch/x86/msr.h>
