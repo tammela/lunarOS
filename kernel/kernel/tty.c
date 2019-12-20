@@ -4,7 +4,7 @@
 
 #include <lunaros/tty.h>
 
-static volatile uint16_t *video = (uint16_t *)TTY_MEM_ADDR;
+static volatile uint16_t *video = (uint16_t *)(TTY_MEM_ADDR + 0xFFFF800000000000);
 
 static int32_t columns = 0;
 static int32_t lines = 0;

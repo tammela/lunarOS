@@ -9,7 +9,7 @@
 #include <lunaros/printf.h>
 #include <lunaros/tty.h>
 
-void main(uint32_t magic, uint32_t addr) {
+void main(uint64_t magic, uint64_t addr) {
    cls();
    if (magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
       puts("Invalid multiboot2 magic number");

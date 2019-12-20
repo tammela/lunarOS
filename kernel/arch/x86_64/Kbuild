@@ -11,5 +11,6 @@ endef
 LDFLAGS+= -z max-page-size=0x1000
 
 OBJS += $(ARCHDIR)/boot.o \
+        $(ARCHDIR)/start64.o \
         $(ARCHDIR)/cpu.o \
         $(ARCHDIR)/irq.o

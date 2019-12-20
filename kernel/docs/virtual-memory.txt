@@ -1,0 +1,35 @@
+===============
+Virtual Memory
+===============
+
+This document informs the virtual memory scheme as seen by the LunarOS kernel.
+Its purpose is to document design decisions, implementations and notes for a
+technical user.
+
+1. Memory layout
+-----------------
+
+LunarOS is a 64-bit only higher half kernel.
+
+The virtual memory layout for 4 level page tables is the following:
+
+| PML4E | PDPTE | PDE | PTE |           Note            |
+--------|------------------------------------------------
+|   0   |   0   |  0  |  0  |  User space virtual start |
+|  255  |  511  | 511 | 511 |  User space virtual end   |
+|  256  |   0   |  0  |  0  |  Kernel virtual start     |
+|  511  |  511  | 511 | 511 |  Kernel virtual end       |
+
+The macro `_VM_KERNEL_START` contains the start address of the kernel's
+virtual memory area.
+
+
+1.1 Layouts details
+--------------------
+
+The user space's virtual address space contains no reserved memory areas.
+
+The kernel's virtual address space contains reserved memory areas. It is
+initially mapped in 2 MiB pages with an offset of 4 MiB of raw physical memory.
+That's because the initial 4 MiB of physical may contain important information
+left by the boot loader or reserved addresses from the CPU.

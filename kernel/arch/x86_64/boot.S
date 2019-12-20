@@ -19,10 +19,6 @@ header_end:
 
 .code32
 
-.global _physical_end
-_physical_end:
-   .zero 4
-
 .section .bss
    .comm pml4, 0x1000, 0x1000
    .comm low_pdpte, 0x1000, 0x1000
@@ -44,13 +40,32 @@ GDTptr:
 
 .section .text
 
-.local page_init
-.type page_init, @function
-page_init:
-   pushl   %ebp
-   movl    %esp, %ebp
-   subl    $8, %esp
+halt32:
+   cli
+   hlt
+1:
+   jmp 1b
 
+/* Linker ENTRY */
+.global _start
+.type _start, @function
+_start:
+   /* physical stack */
+   movl $(stack + 0x4000), %esp
+
+   /* Save Multiboot info */
+   pushl %ebx
+   pushl %eax
+
+   /* Check if 64-bit is supported */
+   movl $0x80000001, %eax
+   cpuid
+   and $(1 << 29), %edx
+
+   cmp $0, %edx
+   je halt32
+
+_boot_page_init:
    movl $low_pdpte, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
    /* PML4[0] = %eax */
@@ -58,8 +73,8 @@ page_init:
 
    movl $high_pdpte, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
-   /* PML4[511] = %eax */
-   movl %eax, pml4 + (511 * 8)
+   /* PML4[256] = %eax */
+   movl %eax, pml4 + (256 * 8)
 
    movl $low_pde, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
@@ -68,19 +83,10 @@ page_init:
 
    movl $high_pde, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
-   /* HIGH_PDPTE[510] = %eax */
-   movl %eax, high_pdpte + (510 * 8)
+   /* HIGH_PDPTE[0] = %eax */
+   movl %eax, high_pdpte
 
-   leave
-   ret
-
-.local mmap_kernel
-.type mmap_kernel, @function
-mmap_kernel:
-   pushl   %ebp
-   movl    %esp, %ebp
-   subl    $8, %esp
-
+_boot_mmap_kernel:
    /* loop counters */
    movl $0, %ecx
    movl $_kernel_physical_end, %esi
@@ -90,7 +96,7 @@ mmap_kernel:
    addl $1, %esi
 
    /* Does both an identity map and a high map */
-map_kernel:
+L1:
    movl $(1 << 21), %eax
    mul %ecx
    orl $(MMU_PRESENT | MMU_WRITABLE | MMU_PD_2MiB), %eax
@@ -99,18 +105,9 @@ map_kernel:
 
    inc %ecx
    cmp %esi, %ecx
-   jne map_kernel
+   jne L1
 
-   leave
-   ret
-
-.local cpu_setpaging
-.type cpu_setpaging, @function
-cpu_setpaging:
-   pushl   %ebp
-   movl    %esp, %ebp
-   subl    $8, %esp
-
+_boot_cpu_setpaging:
    /* Setup pagging */
    movl $pml4, %eax
    movl %eax, %cr3
@@ -127,66 +124,19 @@ cpu_setpaging:
    movl $CR0_REG, %eax
    movl %eax, %cr0
 
-   leave
-   ret
-
-halt32:
-   cli
-   hlt
-1:
-   jmp 1b
-
-/* Linker ENTRY */
-.global _start
-.type _start, @function
-_start:
-   movl $(stack + 0x4000), %esp
-
-   /* Save the Multiboot information structure */
-   pushl %ebx
-   pushl %eax
-
-   /* Check if 64-bit is supported */
-   movl $0x80000001, %eax
-   cpuid
-   and $(1 << 29), %edx
-
-   cmp $0, %edx
-   je halt32
-
-   call page_init
-   call mmap_kernel
-   call cpu_setpaging
-
    /* Recover multiboot2 parameters */
    pop %edi
    pop %esi
 
-
    lgdt GDTptr
 
    /* jump into 64-bit */
-   ljmp $8, $_start64
+   ljmp $8, $_trampoline
 
 .code64
 
-.global _start64
-.type _start64, @function
-_start64:
-   /* Clear segment selectors */
-   movw $0, %ax
-   movw %ax, %ds
-   movw %ax, %es
-   movw %ax, %fs
-   movw %ax, %gs
-   movw %ax, %ss
-
-   movq $_kernel_physical_end, %r10
-   movq %r10, (_physical_end)
-
-   call main
-
-   cli
-   hlt
-1:
-   jmp 1b
+.global _trampoline
+.type _trampoline, @function
+_trampoline:
+   movabs $_start64, %r12
+   jmp *%r12

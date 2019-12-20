@@ -1,9 +1,5 @@
 #pragma once
 
-/* Known addresses */
-#define KERNEL_PHYSICAL_START (0x0000000000400000)
-#define KERNEL_VIRTUAL_START (0xFFFFFFFF80400000)
-
 /* GDT Utilities */
 #define GDT_FLAG_FOUR_KILOBYTE_GRANULARITY (1 << 3)
 #define GDT_FLAG_32BIT_PROTECTED_MODE (1 << 2)
