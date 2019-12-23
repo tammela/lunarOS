@@ -8,6 +8,13 @@ struct page {
    struct page *next; /* next free page (might not be linear) */
 };
 
+typedef struct physmem_layout_t physmem_layout_t;
+
+struct physmem_layout_t {
+   uint64_t addr;
+   uint64_t len;
+};
+
 void page_init(void *vstart, void *vend);
 void page_addrange(void *start, void *end);
 void page_freerange(void *vstart, void *vend);

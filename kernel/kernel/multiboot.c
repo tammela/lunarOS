@@ -12,7 +12,9 @@
 #define next_mmap_tag(m, t) \
    ((uint8_t *)m + ((struct multiboot_tag_mmap *)t)->entry_size)
 
-void multiboot_mmap_iterate(unsigned long addr) {
+extern physmem_layout_t *physmem_layout[8];
+
+void multiboot_parse_mmap(unsigned long addr) {
    struct multiboot_tag *tag = (struct multiboot_tag *)(addr + 8);
 
    if (addr & 7) {
@@ -20,18 +22,20 @@ void multiboot_mmap_iterate(unsigned long addr) {
       return;
    }
 
-   for (; tag->type != MULTIBOOT_TAG_TYPE_END; tag = next_tag(tag)) {
+   for (int idx = 0; tag->type != MULTIBOOT_TAG_TYPE_END; idx++, tag = next_tag(tag)) {
       if (tag->type != MULTIBOOT_TAG_TYPE_MMAP)
          continue;
       multiboot_memory_map_t *mmap =
           ((struct multiboot_tag_mmap *)tag)->entries;
       while ((uint8_t *)mmap < ((uint8_t *)tag + tag->size)) {
+         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE && idx < 8)
+            physmem_layout[idx] = (physmem_layout_t *)mmap;
          mmap = (multiboot_memory_map_t *)next_mmap_tag(mmap, tag);
       }
    }
 }
 
-void multiboot_print_info(unsigned long addr) {
+void multiboot_parse_info(unsigned long addr) {
    struct multiboot_tag *tag = (struct multiboot_tag *)(addr + 8);
 
    if (addr & 7) {

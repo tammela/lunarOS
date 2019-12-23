@@ -1,4 +1,4 @@
 #pragma once
 
-void multiboot_mmap_iterate(unsigned long addr);
-void multiboot_print_info(unsigned long addr);
+void multiboot_parse_mmap(unsigned long addr);
+void multiboot_parse_info(unsigned long addr);
