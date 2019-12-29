@@ -21,10 +21,11 @@ header_end:
 
 .section .bss
    .comm pml4, 0x1000, 0x1000
-   .comm low_pdpte, 0x1000, 0x1000
-   .comm high_pdpte, 0x1000, 0x1000
-   .comm high_pde, 0x1000, 0x1000
-   .comm low_pde, 0x1000, 0x1000
+   .comm pdpte2mb, 0x1000, 0x1000
+   .comm pde2mb, 0x1000, 0x1000
+   .comm pdpte, 0x1000, 0x1000
+   .comm pde, 0x1000, 0x1000
+   .comm pte, 0x1000, 0x1000
    .comm stack, 0x4000, 0x1000
 
 .data
@@ -66,25 +67,21 @@ _start:
    je halt32
 
 _boot_page_init:
-   movl $low_pdpte, %eax
+   movl $pdpte, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
-   /* PML4[0] = %eax */
    movl %eax, pml4 + 0
 
-   movl $high_pdpte, %eax
+   movl $pdpte2mb, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
-   /* PML4[256] = %eax */
    movl %eax, pml4 + (256 * 8)
 
-   movl $low_pde, %eax
+   movl $pde, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
-   /* LOW_PDPTE[0] = %eax */
-   movl %eax, low_pdpte + 0
+   movl %eax, pdpte + 0
 
-   movl $high_pde, %eax
+   movl $pde2mb, %eax
    orl $(MMU_PRESENT | MMU_WRITABLE), %eax
-   /* HIGH_PDPTE[0] = %eax */
-   movl %eax, high_pdpte
+   movl %eax, pdpte2mb + 0
 
 _boot_mmap_kernel:
    /* loop counters */
@@ -100,8 +97,8 @@ L1:
    movl $(1 << 21), %eax
    mul %ecx
    orl $(MMU_PRESENT | MMU_WRITABLE | MMU_PD_2MiB), %eax
-   movl %eax, low_pde(, %ecx, 8)
-   movl %eax, high_pde(, %ecx, 8)
+   movl %eax, pde(, %ecx, 8)
+   movl %eax, pde2mb(, %ecx, 8)
 
    inc %ecx
    cmp %esi, %ecx
