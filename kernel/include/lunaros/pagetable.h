@@ -1,10 +1,20 @@
 #pragma once
 
-#include <std/stdint.h>
+typedef struct pde_t pde_t;
 
-/* Defined on boot time by boot.S */
-extern uint64_t pml4[512];
-extern uint64_t low_pdpte[512];
-extern uint64_t high_pdpte[512];
-extern uint64_t high_pde[512];
-extern uint64_t low_pde[512];
+struct pde_t {
+   uint64_t present: 1;
+   uint64_t rw: 1;
+   uint64_t us: 1;
+   uint64_t pwt: 1;
+   uint64_t pcd: 1;
+   uint64_t accessed: 1;
+   uint64_t dirty: 1;
+   uint64_t pat: 1;
+   uint64_t global: 1;
+   uint64_t : 3;
+   uint64_t base: 40; /* base address */
+   uint64_t : 6;
+   uint64_t pk: 4;
+   uint64_t xd: 1;
+};

@@ -5,6 +5,7 @@
 #include <lunaros/cpu.h>
 #include <lunaros/irq.h>
 #include <lunaros/kernel.h>
+#include <lunaros/mmap.h>
 #include <lunaros/x86.h>
 
 #include <arch/x86/irq.h>
@@ -13,8 +14,6 @@
 
 /* IDT table entries */
 static struct gate entries[ISR_MAX] = {0};
-
-extern struct cpu cpu; /* CPU info */
 
 #define IO_PIC1 (0x20) /* Master PIC base */
 #define IO_PIC2 (0xA0) /* Slave PIC base */
@@ -35,7 +34,7 @@ int lapic_search(void) {
    uint32_t mask = 1;
    rdmsr(IA32_APIC_BASE, &low, &high);
    uint64_t addr = low & 0xFFFFF000; /* fixed 20 bits in lower part */
-   uint32_t remaining = cpu.pmax - 20;
+   uint32_t remaining = cpu_max_physical() - 20;
    /* max physical address is variable */
    while (high && remaining) {
       mask <<= 1;
@@ -44,8 +43,9 @@ int lapic_search(void) {
    }
    addr |= ((uint64_t)(high & mask)) << 32;
    /* Intel manual says lapic is always mapped to 0xFEE00000 in physical mem */
-   return !!(lapic = (uint32_t *)addr);
-   /* TODO: map lapic to strong uncacheable virtual map */
+   if (addr != 0xFEE00000)
+      return 0;
+   return !!(lapic = mmap_physical_page((void *)addr, PPT_UC));
 }
 
 /* lapic registers - from xv6 */

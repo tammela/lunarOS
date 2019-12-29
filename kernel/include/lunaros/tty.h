@@ -2,7 +2,7 @@
 
 /* Video memory address */
 #ifndef TTY_MEM_ADDR
-#define TTY_MEM_ADDR    (0xb8000)
+#define TTY_MEM_ADDR    (0xB8000)
 #endif /* TTY_MEM_ADDR */
 
 #ifndef TTY_MAX_WIDTH

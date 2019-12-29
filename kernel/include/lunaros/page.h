@@ -1,12 +1,8 @@
 #pragma once
 
 #define PGSIZE (4096)
-#define PGROUNDUP(sz) (((sz) + PGSIZE - 1) & ~(PGSIZE - 1))
-#define PGROUNDDOWN(a) (((a)) & ~(PGSIZE - 1))
-
-struct page {
-   struct page *next; /* next free page (might not be linear) */
-};
+#define PGROUNDUP(sz, pgsz) (((sz) + pgsz - 1) & ~(pgsz - 1))
+#define PGROUNDDOWN(sz, pgsz) (((sz)) & ~(pgsz - 1))
 
 typedef struct physmem_layout_t physmem_layout_t;
 
@@ -15,12 +11,17 @@ struct physmem_layout_t {
    uint64_t len;
 };
 
-void page_init(void *vstart, void *vend);
-void page_addrange(void *start, void *end);
-void page_freerange(void *vstart, void *vend);
-void page_free(void *v);
+void page_free(void *v, size_t npages);
+void *page_alloc(size_t npages);
+void page_init(physmem_layout_t **layouts, size_t poff);
 
-/*
-** Page returned is not mapped!!
-*/
-void *page_alloc(void);
+/* physical page type */
+typedef enum ppt_t ppt_t;
+
+enum ppt_t {
+   PPT_UC,      /* Strong Uncacheable */
+   PPT_WC,      /* Write Combining */
+   PPT_WT,      /* Write Through */
+   PPT_WB,      /* Write Back (default) */
+   PPT_WP       /* Write Protected */
+};

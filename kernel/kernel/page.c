@@ -2,49 +2,28 @@
 #include <std/stdint.h>
 
 #include <lunaros/kernel.h>
+#include <lunaros/mm.h>
 #include <lunaros/multiboot.h>
 #include <lunaros/page.h>
 #include <lunaros/printf.h>
 
 /*
-** Set on `boot.S` in the .code64 section.
-** All addresses below are guaranteed to be
-** identitiy mapped on main entry by `boot.S`.
-** Must not allow freeing addresses below this!!
+** Reserved memory for elf
 */
-extern char *_physical_end;
+static size_t physoff;
 
-struct {
-   struct page *free; /* single-linked list of free pages */
-} kmem;
+void page_init(physmem_layout_t **layouts, size_t poff) {
+   physoff = poff;
+   for (int i = 0; i < MM_PHYSMEM_LAYOUT_SZ; i++) {
+      if (layouts[i] == NULL)
+         continue;
 
-void page_addrange(void *start, void *end) {
-   page_freerange(start, end);
-}
+      uint64_t minaddr = PGROUNDUP(layouts[i]->addr, PGSIZE);
+      uint64_t maxaddr = PGROUNDDOWN(layouts[i]->addr + layouts[i]->len, PGSIZE);
 
-void page_freerange(void *vstart, void *vend) {
-   char *p;
-   p = (char *)PGROUNDUP((uintptr_t)vstart);
-   for (; p + PGSIZE <= (char *)vend; p += PGSIZE) page_free(p);
-}
+      (void)minaddr;
+      (void)maxaddr;
 
-void page_free(void *page) {
-   struct page *p;
-   if (unlikely((uintptr_t)page < (uintptr_t)_physical_end))
-      panic("page_free");
-   p = (struct page *)page;
-   p->next = kmem.free;
-   kmem.free = p;
-}
-
-void *page_alloc(void) {
-   struct page *p;
-   p = kmem.free;
-   if (p)
-      kmem.free = p->next;
-   return (void *)p;
-}
-
-void page_init(void *vstart, void *vend) {
-   page_freerange(vstart, vend);
+      /* TODO: create buddy for area */
+   }
 }

@@ -3,6 +3,7 @@
 #include <std/stdint.h>
 
 #include <lunaros/multiboot.h>
+#include <lunaros/mm.h>
 #include <lunaros/page.h>
 #include <lunaros/printf.h>
 
@@ -12,9 +13,7 @@
 #define next_mmap_tag(m, t) \
    ((uint8_t *)m + ((struct multiboot_tag_mmap *)t)->entry_size)
 
-extern physmem_layout_t *physmem_layout[8];
-
-void multiboot_parse_mmap(unsigned long addr) {
+void multiboot_parse_mmap(unsigned long addr, physmem_layout_t **physmem_layout) {
    struct multiboot_tag *tag = (struct multiboot_tag *)(addr + 8);
 
    if (addr & 7) {
@@ -28,7 +27,7 @@ void multiboot_parse_mmap(unsigned long addr) {
       multiboot_memory_map_t *mmap =
           ((struct multiboot_tag_mmap *)tag)->entries;
       while ((uint8_t *)mmap < ((uint8_t *)tag + tag->size)) {
-         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE && idx < 8)
+         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE && idx < MM_PHYSMEM_LAYOUT_SZ)
             physmem_layout[idx] = (physmem_layout_t *)mmap;
          mmap = (multiboot_memory_map_t *)next_mmap_tag(mmap, tag);
       }

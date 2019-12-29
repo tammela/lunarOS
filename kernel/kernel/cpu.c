@@ -5,7 +5,11 @@
 #include <lunaros/printf.h>
 #include <lunaros/tty.h>
 
-struct cpu cpu;
+static struct cpu cpu;
+
+uint8_t cpu_max_physical(void) {
+   return cpu.pmax;
+}
 
 void cpu_init(void) {
    cpu_checkfeatures();
