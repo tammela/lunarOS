@@ -12,8 +12,27 @@ _start64:
    /* Higher half virtual stack */
    addq %r11, %rsp
 
+   /* Reuse tables */
+   movq $pdpte, %rax
+   orq $(MMU_PRESENT | MMU_WRITABLE), %rax
+   movq %rax, pml4 + (257 * 8)
+
+   movq $pde, %rax
+   orq $(MMU_PRESENT | MMU_WRITABLE), %rax
+   movq %rax, pdpte + 0
+
+   movq $pte, %rax
+   orq $(MMU_PRESENT | MMU_WRITABLE), %rax
+   movq %rax, pde + 0
+
    /* Unmap identity mappings */
    movq $0, pml4 + 0
+   movq $1, %rcx
+L2:
+   movq $0, pde(, %rcx, 8)
+   inc %rcx
+   cmp $512, %rcx
+   jne L2
 
    /* Reload cr3 and flush TLB */
    movq %cr3, %rax
@@ -27,8 +46,12 @@ _start64:
    movw %ax, %gs
    movw %ax, %ss
 
-   /* Reserved physical pages */
+   /* Reserved physical pages offset */
    movq $_kernel_physical_end, %rdx
+
+   /* 2MiB virtually mapped area */
+   movq $pte, %rcx
+   addq %r11, %rcx
 
    /* Multiboot info to higher half */
    addq %r11, %rsi
@@ -37,6 +60,7 @@ _start64:
    ** %rdi - multiboot magic
    ** %rsi - multiboot address
    ** %rdx - reserved physical pages offset
+   ** %rcx - reserved virtually mapped area
    */
    call main
 

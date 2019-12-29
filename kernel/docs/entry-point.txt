@@ -1,0 +1,28 @@
+============
+Entry point
+============
+
+This is a document about the kernel's entry point before main.
+Its purpose is to document design decisions, implementations and notes for a
+technical user.
+
+1. 32-bit bootstrap
+--------------------
+
+The 32-bit bootstrap essentially has 2 goals. Setup long mode and jump to
+higher half. To setup long mode we need to do an identity map and a higher
+map and setup paging. The identity map guarantees we don't page fault in
+trivial addresses.
+
+To jump to the higher half we use a trampoline that itself is in 64-bit code,
+but accessed in the identity map part.
+
+2. 64-bit bootstrap
+--------------------
+
+The 64-bit bootstrap has the goal to prepare the environment for the C code.
+It clears the identity map from the TLB cache and reserves a 2MiB virtual area,
+reusing previous allocated tables in the process.
+
+All relevant information is passed onto the C code via the main's arguments. If
+main returns for some reason, it halts indefinitely.

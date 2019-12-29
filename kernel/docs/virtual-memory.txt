@@ -2,7 +2,7 @@
 Virtual Memory
 ===============
 
-This document informs the virtual memory scheme as seen by the LunarOS kernel.
+This is a document about the virtual memory scheme as seen by the kernel.
 Its purpose is to document design decisions, implementations and notes for a
 technical user.
 
@@ -33,3 +33,10 @@ The kernel's virtual address space contains reserved memory areas. It is
 initially mapped in 2 MiB pages with an offset of 4 MiB of raw physical memory.
 That's because the initial 4 MiB of physical may contain important information
 left by the boot loader or reserved addresses from the CPU.
+
+2. Reserved memory
+-------------------
+
+After jumping to the higher half code, the bootstrap assembly code will reuse
+the identity mapping tables to create a reserved 2 MiB virtual area. This area
+maps to physical 4KiB pages lazily.
