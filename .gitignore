@@ -2,5 +2,6 @@
 *.o
 *.d
 *.kernel
+*.swp
 
 .buildiso/
