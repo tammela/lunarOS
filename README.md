@@ -1,6 +1,11 @@
 LunarOS
 =======
 
+[![Total alerts](https://img.shields.io/lgtm/alerts/g/tammela/lunarOS.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tammela/lunarOS/alerts/)
+
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/tammela/lunarOS.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/tammela/lunarOS/context:cpp)
+
+
 An exokernel operating system inspired by the MIT experiments.
 
 #### Build
