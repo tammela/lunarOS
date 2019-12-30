@@ -1,5 +1,7 @@
 #pragma once
 
-int irq_setuparch(void);
-void irq_dolegacy(void);
+/* arch dependent */
+int _irq_init(void);
+
+/* arch independent */
 void irq_init(void);

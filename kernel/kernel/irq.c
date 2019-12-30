@@ -5,7 +5,6 @@
 #include <lunaros/kernel.h>
 
 void irq_init(void) {
-   irq_dolegacy();
-   if (!irq_setuparch())
+   if (!_irq_init())
       panic("Failed to setup interrupts");
 }

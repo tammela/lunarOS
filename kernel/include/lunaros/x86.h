@@ -27,8 +27,8 @@ static __inline void cli(void) {
 /*
 ** Loads the interrupt descriptor table
 */
-static __inline void lidt(struct gate *entries, uint16_t size) {
-   volatile struct idt idt;
+static __inline void lidt(gate_t *entries, uint16_t size) {
+   static volatile idt_t idt;
    idt.size = size;
    idt.addr = (uint64_t)entries;
    asm volatile("lidt %0" ::"r"(idt));

@@ -2,12 +2,16 @@
 
 #include <lunaros/compiler.h>
 
-struct idt {
+typedef struct idt_t idt_t;
+
+struct idt_t {
    uint16_t size; /* entries count */
    uint64_t addr; /* starting entry address */
 } __packed;
 
-struct gate {
+typedef struct gate_t gate_t;
+
+struct gate_t {
    uint16_t low_addr;   /* low address offset */
    uint16_t selector;   /* segment selector */
    uint8_t ist;         /* interrupt stack table [0..2] */
@@ -20,9 +24,12 @@ struct gate {
    uint32_t reserved;   /* reserved */
 } __packed;
 
-enum {
-   ISR_GATETYPE_INTERRUPT = 0x0E,
-   ISR_GATETYPE_TRAP = 0x0F
+typedef enum gt_t gt_t;
+
+/* Gate type */
+enum gt_t {
+   ISR_INTERRUPT = 0x0E,
+   ISR_TRAP = 0x0F
 };
 
 /*
