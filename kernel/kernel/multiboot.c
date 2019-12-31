@@ -27,8 +27,10 @@ void multiboot_parse_mmap(unsigned long addr, physmem_layout_t **physmem_layout)
       multiboot_memory_map_t *mmap =
           ((struct multiboot_tag_mmap *)tag)->entries;
       while ((uint8_t *)mmap < ((uint8_t *)tag + tag->size)) {
-         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE && idx < MM_PHYSMEM_LAYOUT_SZ)
+         if (idx < MM_PHYSMEM_LAYOUT_SZ)
             physmem_layout[idx] = (physmem_layout_t *)mmap;
+         else
+            puts("Dropping memory layout");
          mmap = (multiboot_memory_map_t *)next_mmap_tag(mmap, tag);
       }
    }
