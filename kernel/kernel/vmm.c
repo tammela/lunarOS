@@ -6,9 +6,14 @@
 #include <lunaros/page.h>
 #include <lunaros/pagetable.h>
 #include <lunaros/vmm.h>
+#include <lunaros/x86.h>
 
 /* VM area reserved on boot, scrapped tables */
 static pde_t *reserved;
+
+void vmm_invlpg(uint64_t addr) {
+   invlpg(addr);
+}
 
 uint32_t vmm_fetch_map(vmm_map_t *map) {
    /* TODO: implement proper virtual memory managing */
@@ -42,7 +47,7 @@ void *vmm_assign_map(vmm_map_t *map, void *page, ppt_t type) {
       break;
    case PPT_WC: /* Not implemented */
    case PPT_WP: /* Not implemented */
-   case PPT_WB:
+   case PPT_WB: /* Default */
       /* 0's are set already */
       break;
    default:
@@ -53,6 +58,7 @@ void *vmm_assign_map(vmm_map_t *map, void *page, ppt_t type) {
    vaddr |= (map->pde & 0x1FF) << 21;
    vaddr |= (map->pte & 0x1FF) << 12;
    vaddr |= offset & 0xFFF;
+   vmm_invlpg(vaddr);
    return (void *)vaddr;
 }
 

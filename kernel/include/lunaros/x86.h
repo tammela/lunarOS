@@ -44,3 +44,7 @@ static __inline void wrmsr(uint32_t reg, uint64_t val) {
    ind = val & (0xFFFFFFFFll << 32);
    asm volatile("wrmsr" : : "c"(reg), "a"(ina), "d"(ind));
 }
+
+static __inline void invlpg(uint64_t addr) {
+   asm volatile("invlpg (%0)" : : "r"(addr) : "memory" );
+}
