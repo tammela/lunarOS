@@ -21,8 +21,8 @@ void main(uint64_t magic, uint64_t addr, size_t physoff, pde_t *reserved) {
    }
    puts("LunarOS Kernel\n");
    cpu_init();
+   multiboot_parse_info(addr);
    multiboot_parse_mmap(addr, physmem_layout);
    mm_init(physmem_layout, physoff, reserved);
    irq_init(); /* must be after cpu_init() */
-   multiboot_parse_info(addr);
 }
