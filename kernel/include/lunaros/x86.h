@@ -48,3 +48,7 @@ static __inline void wrmsr(uint32_t reg, uint64_t val) {
 static __inline void invlpg(uint64_t addr) {
    asm volatile("invlpg (%0)" : : "r"(addr) : "memory" );
 }
+
+static __inline void flush_tlb(void) {
+   asm volatile("movq %%cr3, %%rax\n\tmovq %%rax, %%cr3" : : : "rax");
+}

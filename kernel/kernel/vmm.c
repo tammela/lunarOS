@@ -8,9 +8,12 @@
 #include <lunaros/vmm.h>
 #include <lunaros/x86.h>
 
-/* VM area reserved on boot, scrapped tables */
-static pde_t *reserved;
+/* VM area reserved on boot */
+static pte_t *reserved;
 
+void vmm_flush_tlb(void) {
+   flush_tlb();
+}
 void vmm_invlpg(uint64_t addr) {
    invlpg(addr);
 }
@@ -24,26 +27,26 @@ uint32_t vmm_fetch_map(vmm_map_t *map) {
    return 0;
 }
 
-void *vmm_assign_map(vmm_map_t *map, void *page, ppt_t type) {
+void *vmm_assign_map(vmm_map_t *map, void *addr, ppt_t type) {
    uint64_t vaddr = 0xFFFFll << 48;
-   uint64_t base = PGROUNDDOWN((uint64_t)page, PGSIZE);
-   uint16_t offset = (uint64_t)page - base;
-   if (reserved[map->pte].present)
+   uint64_t pgnum = PGROUNDDOWN((uint64_t)addr, PGSIZE);
+   uint16_t offset = (uint64_t)addr - pgnum;
+   uint64_t base = pgnum & (0xFFFFFFFFFFll << 12); /* get base addr */
+   pte_t *entry = (pte_t *)&base;
+   if (entry->present)
       return NULL;
-   memset(&reserved[map->pte], 0, sizeof(pde_t));
-   reserved[map->pte].present = 1;
-   reserved[map->pte].rw = 1;
-   reserved[map->pte].base = base;
+   entry->present = 1;
+   entry->rw = 1;
    switch (type) {
    case PPT_UC:
-      reserved[map->pte].pwt = 1;
-      reserved[map->pte].pcd = 1;
-      reserved[map->pte].pat = 1;
+      entry->pwt = 1;
+      entry->pcd = 1;
+      entry->pat = 1;
       break;
    case PPT_WT:
-      reserved[map->pte].pwt = 1;
-      reserved[map->pte].pcd = 0;
-      reserved[map->pte].pat = 0;
+      entry->pwt = 1;
+      entry->pcd = 0;
+      entry->pat = 0;
       break;
    case PPT_WC: /* Not implemented */
    case PPT_WP: /* Not implemented */
@@ -53,6 +56,7 @@ void *vmm_assign_map(vmm_map_t *map, void *page, ppt_t type) {
    default:
       panic("memory type undefined");
    }
+   reserved[map->pte] = *entry;
    vaddr |= (map->pml4e & 0x1FFll) << 39;
    vaddr |= (map->pdpte & 0x1FF) << 30;
    vaddr |= (map->pde & 0x1FF) << 21;
@@ -62,6 +66,6 @@ void *vmm_assign_map(vmm_map_t *map, void *page, ppt_t type) {
    return (void *)vaddr;
 }
 
-void vmm_init(pde_t *pt) {
+void vmm_init(pte_t *pt) {
    reserved = pt;
 }

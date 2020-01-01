@@ -2,7 +2,7 @@
 #include <lunaros/vmm.h>
 #include <lunaros/page.h>
 
-void mm_init(physmem_layout_t **layouts, size_t physoff, pde_t *reserved) {
+void mm_init(physmem_layout_t **layouts, size_t physoff, pte_t *reserved) {
    /* Virtual memory manager */
    vmm_init(reserved);
    /* Physical page allocator */

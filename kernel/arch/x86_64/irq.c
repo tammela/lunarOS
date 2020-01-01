@@ -6,6 +6,7 @@
 #include <lunaros/irq.h>
 #include <lunaros/kernel.h>
 #include <lunaros/mmap.h>
+#include <lunaros/printf.h>
 #include <lunaros/x86.h>
 
 #include <arch/x86/irq.h>
@@ -18,7 +19,7 @@ static gate_t entries[ISR_MAX] = {0};
 #define IO_PIC1 (0x20) /* Master PIC base */
 #define IO_PIC2 (0xA0) /* Slave PIC base */
 
-static volatile uint32_t *lapic;
+static volatile uint8_t *lapic;
 
 /*
 ** Disable all legacy features, like PIC.
@@ -29,10 +30,14 @@ static void irq_disable_legacy(void) {
    outb(IO_PIC2 + 1, 0xFF);
 }
 
-int lapic_search(void) {
+int lapic_init(void) {
    uint32_t low, high;
    uint32_t mask = 1;
    rdmsr(IA32_APIC_BASE, &low, &high);
+   if (low & (1 << 11))
+      puts("Local APIC enabled\n");
+   if (low & (1 << 10))
+      puts("x2APIC mode enabled\n");
    uint64_t addr = low & 0xFFFFF000; /* fixed 20 bits in lower part */
    uint32_t remaining = cpu_max_physical() - 20;
    /* max physical address is variable */
@@ -92,10 +97,11 @@ static uint32_t lapicr(uint32_t reg) {
 */
 int _irq_init(void) {
    irq_disable_legacy();
-   if (unlikely(!lapic_search()))
-      panic("Failed to setup lapic");
+   if (unlikely(!lapic_init()))
+      panic("Failed to init lapic");
+   uint32_t id = lapicr(ID);
+   (void)id;
    lapicw(SVR, ENABLE | (T_IRQ0 + IRQ_SPURIOUS));
    (void)(entries);
-   (void)(lapicr);
    return 0;
 }
