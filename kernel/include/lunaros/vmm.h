@@ -14,6 +14,11 @@ struct vmm_map_t {
 };
 
 /*
+** Flush the entire TLB cache. Global pages are ignored.
+*/
+void vmm_flush_tlb(void);
+
+/*
 ** Invalidate page on TLB cache
 */
 void vmm_invlpg(uint64_t addr);
@@ -28,4 +33,4 @@ uint32_t vmm_fetch_map(vmm_map_t *map);
 */
 void *vmm_assign_map(vmm_map_t *map, void *page, ppt_t type);
 
-void vmm_init(pde_t *reserved);
+void vmm_init(pte_t *reserved);
