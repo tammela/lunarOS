@@ -9,7 +9,7 @@ ISODIR=.buildiso
 ARCH= none
 
 export CC= gcc
-export CFLAGS= -Og -Wall -Wextra -Werror -g
+export CFLAGS= -Og -Wall -Wextra -Werror -g -D__DEBUG__
 export ASFLAGS= -Wa,--divide
 
 # == END OF USER SETTINGS -- NO NEED TO CHANGE ANYTHING BELOW THIS LINE =======

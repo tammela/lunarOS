@@ -35,9 +35,9 @@ int lapic_init(void) {
    uint32_t mask = 1;
    rdmsr(IA32_APIC_BASE, &low, &high);
    if (low & (1 << 11))
-      puts("Local APIC enabled\n");
+      pr_debug("Local APIC is enabled\n");
    if (low & (1 << 10))
-      puts("x2APIC mode enabled\n");
+      pr_debug("x2APIC mode is enabled\n");
    uint64_t addr = low & 0xFFFFF000; /* fixed 20 bits in lower part */
    uint32_t remaining = cpu_max_physical() - 20;
    /* max physical address is variable */
