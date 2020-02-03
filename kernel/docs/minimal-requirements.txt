@@ -1,0 +1,14 @@
+=====================
+Minimal requirements
+=====================
+
+This is a document about the kernel's minimal requirements.
+Its purpose is to document design decisions, implementations and notes for a
+technical user.
+
+1. Requirements
+----------------
+
+CPU: A 64-bit x86 CPU
+RAM: at least 16 MiB, max of 512 GiB
+VGA: 80x24 terminal

@@ -13,11 +13,14 @@ LunarOS is a 64-bit only higher half kernel.
 
 The virtual memory layout for 4 level page tables is the following:
 
+=========================================================
 | PML4E | PDPTE | PDE | PTE |           Note            |
---------|------------------------------------------------
+=========================================================
 |   0   |   0   |  0  |  0  |  User space virtual start |
 |  255  |  511  | 511 | 511 |  User space virtual end   |
 |  256  |   0   |  0  |  0  |  Kernel virtual start     |
+|  273  |   0   |  0  |  0  |  Direct mapping start     |
+|  400  |  511  | 511 | 511 |  Direct mapping end       |
 |  511  |  511  | 511 | 511 |  Kernel virtual end       |
 
 The macro `_VM_KERNEL_START` contains the start address of the kernel's
@@ -37,6 +40,16 @@ left by the boot loader or reserved addresses from the CPU.
 2. Reserved memory
 -------------------
 
+The kernel reserves an area of 2 physically continous pages for especially
+tailored memory that will live for the whole life of the OS. Allocations
+to this area can be done via `mm_reserved_alloc()` and can never be freed.
+
+2.1 On boot
+------------
 After jumping to the higher half code, the bootstrap assembly code will reuse
 the identity mapping tables to create a reserved 2 MiB virtual area. This area
-maps to physical 4KiB pages lazily.
+maps to physical 4KiB pages lazily and it's not guaranteed to be physically continuous.
+
+It is used internally by the virtual memory manager to map memory before the page fault handler is available.
+
+The kernel will also reserve physical memory on boot. This will depend on size of the memory caches for physically continuous memory.

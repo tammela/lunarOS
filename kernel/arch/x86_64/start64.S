@@ -34,7 +34,9 @@ L2:
    cmp $512, %rcx
    jne L2
 
-   call vmm_flush_tlb
+   /* flush TLB */
+   movq %cr3, %rax
+   movq %rax, %cr3
 
    /* Clear segment selectors */
    movw $0, %ax

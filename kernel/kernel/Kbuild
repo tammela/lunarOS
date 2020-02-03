@@ -7,4 +7,6 @@ OBJS+= $(KERNDIR)/main.o \
        $(KERNDIR)/page.o \
        $(KERNDIR)/mmap.o \
        $(KERNDIR)/mm.o \
-       $(KERNDIR)/vmm.o
+       $(KERNDIR)/vmm.o \
+       $(KERNDIR)/buddy.o \
+       $(KERNDIR)/list.o
