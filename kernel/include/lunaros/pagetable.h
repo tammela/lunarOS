@@ -20,7 +20,7 @@ struct pml4e_t {
    uint64_t accessed: 1;
    uint64_t : 1;        /* ignored */
    uint64_t : 1;        /* reserved (must be 0) */
-   uint64_t : 4;        /* ignored */
+   uint64_t : 3;        /* ignored */
    uint64_t base: 40;   /* base address */
    uint64_t : 12;       /* ignored */
    uint64_t xd: 1;      /* execute disabled */

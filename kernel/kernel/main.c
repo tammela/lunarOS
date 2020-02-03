@@ -13,7 +13,7 @@
 #include <lunaros/tty.h>
 
 void main(uint64_t magic, uint64_t addr, size_t physoff, pte_t *reserved) {
-   physmem_layout_t *physmem_layout[MM_PHYSMEM_LAYOUT_SZ] = {NULL};
+   physmem_layout_t *layouts[MM_PHYSMEM_LAYOUT_SZ] = {NULL};
    cls();
    if (magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
       puts("Invalid multiboot2 magic number");
@@ -22,7 +22,7 @@ void main(uint64_t magic, uint64_t addr, size_t physoff, pte_t *reserved) {
    puts("LunarOS Kernel\n");
    cpu_init();
    multiboot_parse_info(addr);
-   multiboot_parse_mmap(addr, physmem_layout);
-   mm_init(physmem_layout, physoff, reserved);
+   multiboot_parse_mmap(addr, layouts);
+   mm_init(layouts, physoff, reserved);
    irq_init(); /* must be after cpu_init() */
 }

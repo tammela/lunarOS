@@ -1,5 +1,7 @@
 #pragma once
 
+#include <lunaros/list.h>
+
 #define PGSIZE (4096)
 #define PGROUNDUP(sz, pgsz) (((sz) + pgsz - 1) & ~(pgsz - 1))
 #define PGROUNDDOWN(sz, pgsz) (((sz)) & ~(pgsz - 1))

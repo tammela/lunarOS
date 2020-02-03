@@ -52,3 +52,9 @@ static __inline void invlpg(uint64_t addr) {
 static __inline void flush_tlb(void) {
    asm volatile("movq %%cr3, %%rax\n\tmovq %%rax, %%cr3" : : : "rax");
 }
+
+static __inline uint64_t pml4(void) {
+   uint64_t ret;
+   asm volatile("movq %%cr3, %0" : "=r"(ret) : : );
+   return ret;
+}

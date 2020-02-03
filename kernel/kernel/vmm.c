@@ -2,29 +2,60 @@
 #include <std/stdint.h>
 #include <std/string.h>
 
+#include <lunaros/irq.h>
 #include <lunaros/kernel.h>
 #include <lunaros/page.h>
 #include <lunaros/pagetable.h>
 #include <lunaros/vmm.h>
 #include <lunaros/x86.h>
 
+struct vm_area {
+#define VM_AREA_MAX     (512)
+   uint32_t size;
+   pte_t *pt;
+};
+
 /* VM area reserved on boot */
-static pte_t *reserved;
+struct vm_area reserved;
 
-void vmm_flush_tlb(void) {
-   flush_tlb();
-}
-void vmm_invlpg(uint64_t addr) {
-   invlpg(addr);
+void *vmm_virt2phys(void *addr) {
+   uintptr_t a = (uintptr_t)addr; /* for arithmetics */
+   if (a >= VMM_RESERVED_BOOT_START &&
+         a <= VMM_RESERVED_BOOT_END)
+      return (void *)(a - VMM_RESERVED_BOOT_START);
+   else if (a >= VMM_RESERVED_DM_START &&
+         a <= VMM_RESERVED_DM_END)
+      return (void *)(a - VMM_RESERVED_DM_START);
+   else
+      /* TODO */
+      panic("TODO");
 }
 
-uint32_t vmm_fetch_map(vmm_map_t *map) {
+void *vmm_phys2virt(void *addr) {
+   uintptr_t a = (uintptr_t)addr; /* for arithmetics */
+   return (void *)(a + VMM_RESERVED_DM_START);
+}
+
+void vmm_direct_map(pml4e_t entry) {
+   static uint32_t next = 273;
+   pml4e_t *pml4 = vmm_pml4();
+   pml4[next] = entry;
+   next++;
+}
+
+uint32_t vmm_fetch_map(vmm_map_t *map, size_t npages) {
    /* TODO: implement proper virtual memory managing */
-   map->pml4e = 257;
-   map->pdpte = 0;
-   map->pde = 0;
-   map->pte = 0;
-   return 0;
+   if (!irq_enabled()) { /* use reserved page table */
+      if ((reserved.size + npages) > VM_AREA_MAX)
+         panic("No virtual memory mappings available, can't fallback!");
+      reserved.size++;
+      map->pml4e = 257;
+      map->pdpte = 0;
+      map->pde = 0;
+      map->pte = reserved.size - 1;
+      return 0;
+   }
+   return 1;
 }
 
 void *vmm_assign_map(vmm_map_t *map, void *addr, ppt_t type) {
@@ -56,7 +87,7 @@ void *vmm_assign_map(vmm_map_t *map, void *addr, ppt_t type) {
    default:
       panic("memory type undefined");
    }
-   reserved[map->pte] = *entry;
+   reserved.pt[map->pte] = *entry;
    vaddr |= (map->pml4e & 0x1FFll) << 39;
    vaddr |= (map->pdpte & 0x1FF) << 30;
    vaddr |= (map->pde & 0x1FF) << 21;
@@ -67,5 +98,6 @@ void *vmm_assign_map(vmm_map_t *map, void *addr, ppt_t type) {
 }
 
 void vmm_init(pte_t *pt) {
-   reserved = pt;
+   reserved.pt = pt;
+   reserved.size = 0;
 }

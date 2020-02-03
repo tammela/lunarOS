@@ -13,7 +13,7 @@
 #define next_mmap_tag(m, t) \
    ((uint8_t *)m + ((struct multiboot_tag_mmap *)t)->entry_size)
 
-void multiboot_parse_mmap(unsigned long addr, physmem_layout_t **physmem_layout) {
+void multiboot_parse_mmap(unsigned long addr, physmem_layout_t **layouts) {
    struct multiboot_tag *tag = (struct multiboot_tag *)(addr + 8);
 
    if (addr & 7) {
@@ -21,16 +21,19 @@ void multiboot_parse_mmap(unsigned long addr, physmem_layout_t **physmem_layout)
       return;
    }
 
-   for (int idx = 0; tag->type != MULTIBOOT_TAG_TYPE_END; idx++, tag = next_tag(tag)) {
+   for (int idx = 0; tag->type != MULTIBOOT_TAG_TYPE_END; tag = next_tag(tag)) {
       if (tag->type != MULTIBOOT_TAG_TYPE_MMAP)
          continue;
       multiboot_memory_map_t *mmap =
           ((struct multiboot_tag_mmap *)tag)->entries;
       while ((uint8_t *)mmap < ((uint8_t *)tag + tag->size)) {
-         if (idx < MM_PHYSMEM_LAYOUT_SZ)
-            physmem_layout[idx] = (physmem_layout_t *)mmap;
-         else
-            puts("Dropping memory layout");
+         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE &&
+               idx < MM_PHYSMEM_LAYOUT_SZ) {
+            layouts[idx] = (physmem_layout_t *)mmap;
+            idx++;
+         } else if (idx >= MM_PHYSMEM_LAYOUT_SZ) {
+            pr_debug("Dropping memory layout\n");
+         }
          mmap = (multiboot_memory_map_t *)next_mmap_tag(mmap, tag);
       }
    }
