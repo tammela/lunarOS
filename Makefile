@@ -29,10 +29,14 @@ all:	$(ARCH)
 $(PLATS):
 	@cd kernel/ && $(MAKE)
 
+ifeq ($(ARCH), none)
+clean: $(ARCH)
+else
 clean:
 	cd kernel/ && $(MAKE) $@
 	@rm -rf $(ISODIR)
 	@rm -rf $(ISO)
+endif
 
 $(ISODIR):
 	@mkdir -p $@/boot/grub
