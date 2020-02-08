@@ -26,7 +26,7 @@ static bool node_is_split(uint8_t *tree, size_t node) {
 }
 
 static void node_set_split(uint8_t *tree, size_t node) {
-   tree[node / 8] &= 1 << (node % 8);
+   tree[node / 8] |= 1 << (node % 8);
 }
 
 static void node_parent_flip(uint8_t *tree, size_t node) {
@@ -55,23 +55,23 @@ static size_t buddy_find_bkt(buddy_area_t *b, size_t requested) {
       bkt--;
       sz <<= 1;
    }
-   return bkt;
+   return bkt - 1; /* actually an index */
 }
 
 void *buddy_tree_walk(buddy_area_t *b, size_t bkt) {
    list_t *p;
    size_t node = 0; /* root node */
-   size_t walker = 0; /* root bucket */
+   size_t walker = 1; /* child's bucket */
+   if (b->height >= bkt) /* we are guaranteed to be full */
+	   return NULL;
    while (walker <= bkt) {
       if (node_is_split(b->tree, node)) { /* right child is full */
          node = node_left(node);
          walker++;
          continue;
       }
-      if (b->height >= bkt) /* we are guaranteed to be full */
-         return NULL;
       node_set_split(b->tree, node);
-      /* insert the left sibling to the free list */
+      /* insert the left child to the free list */
       p = node2ptr(b, node_left(node), walker);
       list_insert(&b->buckets[walker], p);
       if (walker == bkt) { /* found the block requested? */
@@ -106,7 +106,7 @@ void buddy_free(buddy_area_t *b, void *ptr) {
       return;
    bkt = (size_t *)((uintptr_t)ptr - sizeof(size_t)); /* allocation bucket */
    node = ptr2node(b, (uintptr_t)bkt, *bkt);
-   while (node != 0) {
+   while (node != 0) { /* while not root */
       /* this node is unused now */
       node_parent_flip(b->tree, node);
       if (node_is_split(b->tree, node_parent(node))) /* is our sibling used? */
