@@ -49,7 +49,7 @@ $(ISO): $(ARCH) $(ISODIR)
 iso: $(ISO)
 
 qemu: iso
-	qemu-system-$(ARCH) -cpu qemu64 -cdrom lunarOS.iso -m 1024M
+	qemu-system-$(ARCH) -cpu qemu64 -cdrom $(ISO) -m 1024M
 
 qemu-debug: iso
 	gdb -x kernel/scripts/kernel-$(ARCH).gdb
