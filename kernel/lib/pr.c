@@ -10,6 +10,14 @@ void pr_debug(const char *fmt, ...) {
 #endif
 }
 
+void pr_warn(const char *fmt, ...) {
+   va_list args;
+   puts("[WARNING] ");
+   va_start(args, fmt);
+   vprintf(fmt, args);
+   va_end(args);
+}
+
 void pr_err(const char *fmt, ...) {
    va_list args;
    puts("[ERROR] ");
