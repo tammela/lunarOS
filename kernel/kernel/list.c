@@ -1,3 +1,4 @@
+#include <std/stdbool.h>
 #include <std/stddef.h>
 
 #include <lunaros/list.h>
@@ -7,12 +8,12 @@ void list_init(list_t *lst) {
    lst->next = lst;
 }
 
-void list_insert(list_t *lst, list_t *entry) {
+void list_pushback(list_t *lst, list_t *entry) {
    list_t *prev = lst->prev;
-   entry->prev = prev;
-   entry->next = prev->next;
    prev->next = entry;
-   prev->next->prev = entry;
+   lst->prev = entry;
+   entry->prev = prev;
+   entry->next = lst;
 }
 
 void list_remove(list_t *entry) {
@@ -20,6 +21,8 @@ void list_remove(list_t *entry) {
    list_t *next = entry->next;
    prev->next = next;
    next->prev = prev;
+   entry->next = entry;
+   entry->prev = entry;
 }
 
 list_t *list_pop(list_t *lst) {
@@ -30,6 +33,6 @@ list_t *list_pop(list_t *lst) {
    return back;
 }
 
-uint32_t list_empty(list_t *lst) {
+bool list_empty(list_t *lst) {
    return lst->prev == lst;
 }

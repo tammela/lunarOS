@@ -62,8 +62,8 @@ static void direct_map_everything(void) {
 static void bootstrap_page_allocator(void *base) {
    buddy_area_t *b = buddy_area_init(base, _BUDDY_MAX, mm_reserved_alloc);
    list_init(&buddies);
-   list_insert(&buddies, &b->head);
-   pr_debug("Page Allocator initialized");
+   list_pushback(&buddies, &b->head);
+   pr_debug("Page Allocator initialized\n");
 }
 
 void page_init(physmem_layout_t **layouts, size_t poff) {

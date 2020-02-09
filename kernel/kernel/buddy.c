@@ -63,7 +63,7 @@ void *buddy_tree_walk(buddy_area_t *b, size_t bkt) {
    size_t node = 0; /* root node */
    size_t walker = 1; /* child's bucket */
    if (b->height >= bkt) /* we are guaranteed to be full */
-	   return NULL;
+      return NULL;
    while (walker <= bkt) {
       if (node_is_split(b->tree, node)) { /* right child is full */
          node = node_left(node);
@@ -73,7 +73,7 @@ void *buddy_tree_walk(buddy_area_t *b, size_t bkt) {
       node_set_split(b->tree, node);
       /* insert the left child to the free list */
       p = node2ptr(b, node_left(node), walker);
-      list_insert(&b->buckets[walker], p);
+      list_pushback(&b->buckets[walker], p);
       if (walker == bkt) { /* found the block requested? */
          char *ret = node2ptr(b, node_right(node), bkt);
          b->height = bkt;
@@ -111,13 +111,14 @@ void buddy_free(buddy_area_t *b, void *ptr) {
       node_parent_flip(b->tree, node);
       if (node_is_split(b->tree, node_parent(node))) /* is our sibling used? */
          break;
-      /* remove sibling from free list */
+      /* else remove sibling from free list */
       list_remove(node2ptr(b, node_sibling(node), *bkt));
-      *bkt -= 1;
+      (*bkt)--;
       node = node_parent(node);
    }
-   /* add the top most merged buddy to the free list */
-   list_insert(&b->buckets[*bkt], node2ptr(b, node, *bkt));
+   /* add the top most buddy to the free list */
+   list_pushback(&b->buckets[*bkt], node2ptr(b, node, *bkt));
+   b->height = *bkt;
 }
 
 buddy_area_t *buddy_area_init(void *addr, size_t max, allocf_t alloc) {
@@ -144,6 +145,6 @@ buddy_area_t *buddy_area_init(void *addr, size_t max, allocf_t alloc) {
    list_init(&b->head);
    for (size_t i = 0; i < buddy_max_bucket(b); i++)
       list_init(&b->buckets[i]);
-   list_insert(&b->buckets[0], p);
+   list_pushback(&b->buckets[0], p);
    return b;
 }
