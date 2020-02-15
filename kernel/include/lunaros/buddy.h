@@ -12,14 +12,13 @@ typedef struct buddy_area_t buddy_area_t;
 struct buddy_area_t {
    void *base;          /* base address */
    uint8_t *tree;       /* bitwise binary tree */
-   list_t *buckets;     /* buddy's bucket */
-   uint64_t height;     /* tree's height */
+   list_t *freelist;    /* buddy's freelist */
    uint64_t min;        /* minimal allocation size */
    uint64_t max;        /* maximum allocation size */
-   list_t head;         /* buddies list */
+   list_t head;         /* buddies list head */
 };
 
-/* Tree walk functions */
+/* Tree walking macros */
 #define node_parent(i)          ((i - 1) / 2)
 #define node_left(i)            ((i * 2) + 1)
 #define node_right(i)           ((i * 2) + 2)
