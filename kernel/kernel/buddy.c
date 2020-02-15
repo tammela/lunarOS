@@ -62,8 +62,6 @@ void *buddy_tree_walk(buddy_area_t *b, size_t bkt) {
    list_t *p;
    size_t node = 0; /* root node */
    size_t walker = 1; /* child's bucket */
-   if (b->height >= bkt) /* we are guaranteed to be full */
-      return NULL;
    while (walker <= bkt) {
       if (node_is_split(b->tree, node)) { /* right child is full */
          node = node_left(node);
@@ -73,10 +71,9 @@ void *buddy_tree_walk(buddy_area_t *b, size_t bkt) {
       node_set_split(b->tree, node);
       /* insert the left child to the free list */
       p = node2ptr(b, node_left(node), walker);
-      list_pushback(&b->buckets[walker], p);
+      list_pushback(&b->freelist[walker], p);
       if (walker == bkt) { /* found the block requested? */
          char *ret = node2ptr(b, node_right(node), bkt);
-         b->height = bkt;
          *(size_t *)ret = bkt;
          return ret + sizeof(size_t);
       }
@@ -89,7 +86,7 @@ void *buddy_tree_walk(buddy_area_t *b, size_t bkt) {
 void *buddy_alloc(buddy_area_t *b, size_t requested) {
    size_t node;
    size_t bkt = buddy_find_bkt(b, requested);
-   void *p = list_pop(&b->buckets[bkt]);
+   void *p = list_pop(&b->freelist[bkt]);
    if (!p) /* no bucket available */
       return buddy_tree_walk(b, bkt); /* try to split the memory blocks */
    node = ptr2node(b, (uintptr_t)p, bkt);
@@ -117,8 +114,7 @@ void buddy_free(buddy_area_t *b, void *ptr) {
       node = node_parent(node);
    }
    /* add the top most buddy to the free list */
-   list_pushback(&b->buckets[*bkt], node2ptr(b, node, *bkt));
-   b->height = *bkt;
+   list_pushback(&b->freelist[*bkt], node2ptr(b, node, *bkt));
 }
 
 buddy_area_t *buddy_area_init(void *addr, size_t max, allocf_t alloc) {
@@ -137,14 +133,14 @@ buddy_area_t *buddy_area_init(void *addr, size_t max, allocf_t alloc) {
       pr_err("Not enough memory for buddy");
       return NULL;
    }
-   b->buckets = alloc(buddy_max_bucket(b) * sizeof(b->buckets));
-   if (unlikely(b->buckets == NULL)) {
+   b->freelist = alloc(buddy_max_bucket(b) * sizeof(b->freelist));
+   if (unlikely(b->freelist == NULL)) {
       pr_err("Not enough memory for buddy");
       return NULL;
    }
    list_init(&b->head);
    for (size_t i = 0; i < buddy_max_bucket(b); i++)
-      list_init(&b->buckets[i]);
-   list_pushback(&b->buckets[0], p);
+      list_init(&b->freelist[i]);
+   list_pushback(&b->freelist[0], p);
    return b;
 }
