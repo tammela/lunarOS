@@ -15,6 +15,7 @@ struct buddy_area_t {
    list_t *freelist;    /* buddy's freelist */
    uint64_t min;        /* minimal allocation size */
    uint64_t max;        /* maximum allocation size */
+   uint64_t available;  /* available memory in buddy */
    list_t head;         /* buddies list head */
 };
 
