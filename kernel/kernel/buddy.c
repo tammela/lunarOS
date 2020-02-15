@@ -22,7 +22,7 @@ static uint64_t log2(uint64_t n) {
 }
 
 static bool node_is_split(uint8_t *tree, size_t node) {
-   return (tree[node / 8] >> (node % 8)) & true;
+   return (tree[node / 8] >> (node % 8)) & 1;
 }
 
 static void node_set_split(uint8_t *tree, size_t node) {
@@ -84,20 +84,25 @@ void *buddy_tree_walk(buddy_area_t *b, size_t bkt) {
 }
 
 void *buddy_alloc(buddy_area_t *b, size_t requested) {
-   size_t node;
-   size_t bkt = buddy_find_bkt(b, requested);
-   void *p = list_pop(&b->freelist[bkt]);
+   size_t node, bkt, realsz;
+   void *p;
+   bkt = buddy_find_bkt(b, requested + 8);
+   realsz =  1 << (log2(b->max) - bkt);
+   if (b->available - realsz > b->available)
+      return NULL;
+   b->available -= realsz;
+   p = list_pop(&b->freelist[bkt]);
    if (!p) /* no bucket available */
       return buddy_tree_walk(b, bkt); /* try to split the memory blocks */
    node = ptr2node(b, (uintptr_t)p, bkt);
-   /* used or full, doesn't matter */
-   node_parent_flip(b->tree, node);
+   if (node != 0) /* is node root? */
+      node_parent_flip(b->tree, node);
    *(size_t *)p = bkt;
    return p + sizeof(size_t);
 }
 
 void buddy_free(buddy_area_t *b, void *ptr) {
-   size_t node;
+   size_t node, sz;
    size_t *bkt;
    if (!ptr)
       return;
@@ -113,6 +118,8 @@ void buddy_free(buddy_area_t *b, void *ptr) {
       (*bkt)--;
       node = node_parent(node);
    }
+   sz = 1 << (log2(b->max) - *bkt);
+   b->available += sz;
    /* add the top most buddy to the free list */
    list_pushback(&b->freelist[*bkt], node2ptr(b, node, *bkt));
 }
@@ -125,6 +132,7 @@ buddy_area_t *buddy_area_init(void *addr, size_t max, allocf_t alloc) {
       return NULL;
    }
    memset(b, 0, sizeof(buddy_area_t));
+   b->available = max;
    b->min = PGSIZE;
    b->max = max;
    b->base = addr;
