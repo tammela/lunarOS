@@ -16,3 +16,6 @@ void list_remove(list_t *lst);
 list_t *list_pop(list_t *lst);
 
 bool list_empty(list_t *lst);
+
+#define list_for_each(cursor, head) \
+   for(cursor = (head)->next; cursor != (head); cursor = cursor->next)
