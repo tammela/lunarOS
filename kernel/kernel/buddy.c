@@ -2,6 +2,7 @@
 #include <std/stdbool.h>
 
 #include <lunaros/buddy.h>
+#include <lunaros/kernel.h>
 #include <lunaros/list.h>
 #include <lunaros/page.h>
 #include <lunaros/printf.h>
@@ -15,11 +16,6 @@
 ** tree. If the node is true it means it's splitted and the left node is free.
 ** A node in the false state means that it's either full or empty.
 */
-
-static uint64_t log2(uint64_t n) {
-   if (n == 0) return 0;
-   return __builtin_ctzll(n);
-}
 
 static bool node_is_split(uint8_t *tree, size_t node) {
    return (tree[node / 8] >> (node % 8)) & 1;

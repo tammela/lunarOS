@@ -13,7 +13,7 @@ struct physmem_layout_t {
    uint64_t len;
 };
 
-void page_free(void *v, size_t npages);
+void page_free(void *v);
 void *page_alloc(size_t npages);
 void page_init(physmem_layout_t **layouts, size_t poff);
 
