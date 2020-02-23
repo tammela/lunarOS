@@ -49,7 +49,7 @@ L2:
    /* Reserved physical pages offset */
    movq $_kernel_physical_end, %rdx
 
-   /* 2MiB virtually mapped area */
+   /* 2MiB virtual area */
    movq $pte, %rcx
    addq %r11, %rcx
 
@@ -60,7 +60,7 @@ L2:
    ** %rdi - multiboot magic
    ** %rsi - multiboot address
    ** %rdx - reserved physical pages offset
-   ** %rcx - reserved virtually mapped area
+   ** %rcx - reserved virtual area
    */
    call main
 

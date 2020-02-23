@@ -9,7 +9,6 @@
 
 void __noreturn panic(const char *fmt, ...);
 
-
 /* container_of() from NetBSD */
 
 #define __validate_container_of(PTR, TYPE, FIELD)                 \
