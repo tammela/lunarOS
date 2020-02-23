@@ -32,3 +32,6 @@ static __inline uint64_t log2(uint64_t n) {
 static __inline uint64_t npow2(uint64_t n) {
    return n == 1 ? 1 : 1 << (64 - __builtin_clzl(n - 1));
 }
+
+/* Align `n` to boundary `b` */
+#define ALIGN_TO(n, b) { n += b - (n % b); }

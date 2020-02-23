@@ -5,6 +5,7 @@
 
 #include <lunaros/cpu.h>
 #include <lunaros/irq.h>
+#include <lunaros/kernel.h>
 #include <lunaros/mm.h>
 #include <lunaros/multiboot.h>
 #include <lunaros/page.h>
@@ -20,6 +21,7 @@ void main(uint64_t magic, uint64_t addr, size_t physoff, pte_t *reserved) {
       return;
    }
    puts("LunarOS Kernel\n");
+   ALIGN_TO(physoff, 8);
    cpu_init();
    multiboot_parse_info(addr);
    multiboot_parse_mmap(addr, layouts);
