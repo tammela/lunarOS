@@ -17,6 +17,15 @@ void page_free(void *v);
 void *page_alloc(size_t npages);
 void page_init(physmem_layout_t **layouts, size_t poff);
 
+struct page {
+   struct page *next;
+   void *virtual;
+   uint8_t order;
+};
+
+struct page *pfn_to_page(uint64_t pfn);
+struct page *phys2page(void *addr);
+
 /* physical page type */
 typedef enum ppt_t ppt_t;
 

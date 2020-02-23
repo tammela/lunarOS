@@ -6,6 +6,7 @@
 #include <lunaros/list.h>
 #include <lunaros/page.h>
 #include <lunaros/printf.h>
+#include <lunaros/vmm.h>
 
 /*
 ** Physical page frame allocator.
@@ -54,8 +55,25 @@ static size_t buddy_find_bkt(buddy_area_t *b, size_t requested) {
    return bkt - 1; /* actually an index */
 }
 
+void buddy_pushback(list_t *freelist, void *addr) {
+   list_t *ph = vmm_phys2virt(addr);
+   list_pushback(freelist, ph);
+}
+
+void *buddy_pop(list_t *freelist) {
+   list_t *entry = list_pop(freelist);
+   memset(entry, 0, sizeof(list_t));
+   return (void *)entry;
+}
+
+void buddy_remove(void *addr) {
+   list_t *ph = vmm_phys2virt(addr);
+   list_remove(ph);
+   memset(ph, 0, sizeof(list_t));
+}
+
 void *buddy_tree_walk(buddy_area_t *b, size_t bkt) {
-   list_t *p;
+   void *addr;
    size_t node = 0; /* root node */
    size_t walker = 1; /* child's bucket */
    while (walker <= bkt) {
@@ -66,12 +84,13 @@ void *buddy_tree_walk(buddy_area_t *b, size_t bkt) {
       }
       node_set_split(b->tree, node);
       /* insert the left child to the free list */
-      p = node2ptr(b, node_left(node), walker);
-      list_pushback(&b->freelist[walker], p);
-      if (walker == bkt) { /* found the block requested? */
-         char *ret = node2ptr(b, node_right(node), bkt);
-         *(size_t *)ret = bkt;
-         return ret + sizeof(size_t);
+      addr = node2ptr(b, node_left(node), walker);
+      buddy_pushback(&b->freelist[walker], addr);
+      if (walker == bkt) {  /* found the block requested? */
+         void *ret = node2ptr(b, node_right(node), bkt);
+         struct page *page = phys2page(ret);
+         page->order = bkt;
+         return ret;
       }
       node = node_right(node);
       walker++;
@@ -81,47 +100,52 @@ void *buddy_tree_walk(buddy_area_t *b, size_t bkt) {
 
 void *buddy_alloc(buddy_area_t *b, size_t requested) {
    size_t node, bkt, realsz;
-   void *p;
-   bkt = buddy_find_bkt(b, requested + 8);
+   struct page *page;
+   void *ptr;
+   bkt = buddy_find_bkt(b, requested);
    realsz =  1 << (log2(b->max) - bkt);
    if (b->available - realsz > b->available)
       return NULL;
    b->available -= realsz;
-   p = list_pop(&b->freelist[bkt]);
-   if (!p) /* no bucket available */
-      return buddy_tree_walk(b, bkt); /* try to split the memory blocks */
-   node = ptr2node(b, (uintptr_t)p, bkt);
+   ptr = buddy_pop(&b->freelist[bkt]);
+   if (ptr == NULL) /* found available page? */
+      return buddy_tree_walk(b, bkt); /* try to split the page blocks */
+   node = ptr2node(b, (uintptr_t)ptr, bkt);
    if (node != 0) /* is node root? */
       node_parent_flip(b->tree, node);
-   *(size_t *)p = bkt;
-   return p + sizeof(size_t);
+   page = phys2page(ptr);
+   page->order = bkt;
+   return ptr;
 }
 
 void buddy_free(buddy_area_t *b, void *ptr) {
-   size_t node, sz;
-   size_t *bkt;
+   struct page *page;
+   size_t node, sz, bkt;
    if (!ptr)
       return;
-   bkt = (size_t *)((uintptr_t)ptr - sizeof(size_t)); /* allocation bucket */
-   node = ptr2node(b, (uintptr_t)bkt, *bkt);
+   page = phys2page(ptr);
+   if (page == NULL)
+      return;
+   bkt = (size_t)page->order;
+   node = ptr2node(b, (uintptr_t)ptr, bkt);
    while (node != 0) { /* while not root */
       /* this node is unused now */
       node_parent_flip(b->tree, node);
       if (node_is_split(b->tree, node_parent(node))) /* is our sibling used? */
          break;
       /* else remove sibling from free list */
-      list_remove(node2ptr(b, node_sibling(node), *bkt));
-      (*bkt)--;
+      buddy_remove(node2ptr(b, node_sibling(node), bkt));
+      bkt--;
       node = node_parent(node);
    }
-   sz = 1 << (log2(b->max) - *bkt);
+   sz = 1 << (log2(b->max) - bkt);
    b->available += sz;
    /* add the top most buddy to the free list */
-   list_pushback(&b->freelist[*bkt], node2ptr(b, node, *bkt));
+   buddy_pushback(&b->freelist[bkt], node2ptr(b, node, bkt));
+   memset(page, 0, sizeof(struct page));
 }
 
 buddy_area_t *buddy_area_init(void *addr, size_t max, allocf_t alloc) {
-   list_t *p = addr;
    buddy_area_t *b = alloc(sizeof(buddy_area_t));
    if (unlikely(b == NULL)) {
       pr_err("Not enough memory for buddy");
@@ -145,6 +169,6 @@ buddy_area_t *buddy_area_init(void *addr, size_t max, allocf_t alloc) {
    list_init(&b->head);
    for (size_t i = 0; i < buddy_max_bucket(b); i++)
       list_init(&b->freelist[i]);
-   list_pushback(&b->freelist[0], p);
+   buddy_pushback(&b->freelist[0], addr);
    return b;
 }
