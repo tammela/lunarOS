@@ -2,7 +2,7 @@ ENTRY(_start)
 
 SECTIONS
 {
-  . = 4M;
+   . = 4K;
   _kernel_physical_start = .;
 
   .boottext ALIGN(4K) :
