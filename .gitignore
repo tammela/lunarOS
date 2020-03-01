@@ -4,4 +4,5 @@
 *.kernel
 *.swp
 
+tags
 .buildiso/
