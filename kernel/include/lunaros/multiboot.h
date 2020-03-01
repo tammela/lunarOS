@@ -2,5 +2,5 @@
 
 #include <lunaros/page.h>
 
-void multiboot_parse_mmap(unsigned long addr, physmem_layout_t **layouts);
+mem_area_t *multiboot_parse_mmap(unsigned long addr, size_t *sz);
 void multiboot_parse_info(unsigned long addr);
