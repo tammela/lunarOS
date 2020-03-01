@@ -34,4 +34,4 @@ static __inline uint64_t npow2(uint64_t n) {
 }
 
 /* Align `n` to boundary `b` */
-#define ALIGN_TO(n, b) { n += b - (n % b); }
+#define ALIGN_TO(n, b) { if (n % b != 0) n += b - (n % b); }
