@@ -12,47 +12,38 @@
 #include <lunaros/printf.h>
 #include <lunaros/vmm.h>
 
-typedef struct {
-   struct page *map;
-   size_t size;
-} mem_map_t;
-
-mem_map_t mem_map;
-
 /*
 ** Reserved memory for ELF
 */
 static size_t physoff;
 
 /*
-** Binary buddies used for page frame allocation
-*/
-static LIST_HEAD(buddies);
-
-/*
 ** That's how we see the available physical memory in the system
 */
-static physmem_layout_t physmem[MM_PHYSMEM_LAYOUT_SZ];
-
-struct page *pfn_to_page(uint64_t pfn) {
-   if (pfn > mem_map.size)
-      return NULL;
-   return &mem_map.map[pfn];
-}
+mem_area_t *phys_mem = NULL;
+size_t phys_mem_sz = 0;
 
 struct page *phys2page(void *addr) {
    uintptr_t address = (uintptr_t)addr;
-   uint64_t pfn = address / PGSIZE;
-   return pfn_to_page(pfn);
+   for (size_t i = 0; i < phys_mem_sz; i++) {
+      size_t map_index = 0;
+      if (phys_mem[i].addr + phys_mem[i].len < address)
+         continue;
+      map_index = pfn(address) - pfn(phys_mem[i].addr);
+      return &phys_mem[i].map[map_index];
+   }
+   return NULL;
 }
 
 void *page_alloc(size_t npages) {
    list_t *cursor;
-   list_for_each (cursor, &buddies) {
-      buddy_area_t *b = container_of(cursor, buddy_area_t, head);
-      if (b->available < PGSIZE * npages)
-         continue;
-      return buddy_alloc(b, npages);
+   for (size_t i = 0; i < phys_mem_sz; i++) {
+      list_for_each (cursor, &phys_mem[i].buddies) {
+         buddy_area_t *b = container_of(cursor, buddy_area_t, head);
+         if (b->available < PGSIZE * npages)
+            continue;
+         return buddy_alloc(b, npages);
+      }
    }
    return NULL;
 }
@@ -60,73 +51,68 @@ void *page_alloc(size_t npages) {
 void page_free(void *page) {
    list_t *cursor;
    uintptr_t addr = (uintptr_t)page;
-   list_for_each (cursor, &buddies) {
-      buddy_area_t *b = container_of(cursor, buddy_area_t, head);
-      uintptr_t base = (uintptr_t)b->base;
-      if (addr >= base && addr <= (base + b->max))
-         return buddy_free(b, page);
+   for (size_t i = 0; i < phys_mem_sz; i++) {
+      list_for_each (cursor, &phys_mem[i].buddies) {
+         buddy_area_t *b = container_of(cursor, buddy_area_t, head);
+         uintptr_t base = (uintptr_t)b->base;
+         if (addr >= base && addr <= (base + b->max))
+            return buddy_free(b, page);
+      }
    }
 }
 
-#define BUDDY_MAX_SIZE  (1 << 20)   /* 1 MiB */
+#define BUDDY_MAX_SIZE  (1 << 19)   /* 512K */
 
 static void bootstrap_page_allocator(void) {
-   for (size_t i = 0; i < MM_PHYSMEM_LAYOUT_SZ; i++) {
+   for (size_t i = 0; i < phys_mem_sz; i++) {
       buddy_area_t *b;
-      if (physmem[i].addr == 0)
+      if (phys_mem[i].len < BUDDY_MAX_SIZE)
          continue;
-      if (physmem[i].len < BUDDY_MAX_SIZE)
-         continue;
-      b = buddy_area_init((void *)physmem[i].addr,
+      b = buddy_area_init((void *)phys_mem[i].base,
             BUDDY_MAX_SIZE, mm_reserved_alloc);
       if (unlikely(b == NULL))
          panic("Not enough reserved memory to bootstrap the page allocator!\n");
-      list_pushback(&buddies, &b->head);
-      break;
+      list_init(&phys_mem[i].buddies);
+      list_pushback(&phys_mem[i].buddies, &b->head);
    }
    pr_debug("Page Allocator initialized\n");
 }
 
-void init_mem_map(size_t npages) {
-   size_t alloc_sz = npages * sizeof(struct page);
-   for (size_t i = 0; i < MM_PHYSMEM_LAYOUT_SZ; i++) {
-      if (physmem[i].addr == 0 || physmem[i].len < alloc_sz)
-         continue;
-      mem_map.size = npages;
-      mem_map.map = vmm_phys2virt((void *)physmem[i].addr);
+static void init_mem_map() {
+   for (size_t i = 0; i < phys_mem_sz; i++) {
+      size_t npages = (phys_mem[i].len - phys_mem[i].used) / PGSIZE;
+      size_t alloc_sz = npages * sizeof(struct page);
+      if (unlikely(phys_mem[i].len < alloc_sz))
+         panic("Cannot allocate memory map\n");
+      phys_mem[i].map_sz = npages;
+      phys_mem[i].map = vmm_phys2virt((void *)phys_mem[i].addr);
       /* reserve area on layout */
-      physmem[i].addr -= alloc_sz;
-      physmem[i].len -= alloc_sz;
-      ALIGN_TO(physmem[i].addr, 8);
-      break;
+      phys_mem[i].base = (uintptr_t)phys_mem[i].addr + alloc_sz;
+      phys_mem[i].used += alloc_sz;
+      ALIGN_TO(phys_mem[i].base, sizeof(uintmax_t));
+      for (size_t j = 0; j < npages; j++)
+         memset(&phys_mem[i].map[j], 0, sizeof(struct page));
+      pr_debug("Reserved area of %d bytes for memory map\n", alloc_sz);
    }
-   if (unlikely(mem_map.map == NULL))
-      panic("Not enough memory to initialize mem_map\n");
-   for (size_t i = 0; i < npages; i++)
-      memset(&mem_map.map[i], 0, sizeof(struct page));
-   pr_debug("Reserved area of %d bytes at %p for mem_map\n",
-         mem_map.size * sizeof(struct page), mem_map.map);
 }
 
-void page_init(physmem_layout_t **layouts, size_t poff) {
+void page_init(mem_area_t *areas, size_t sz, size_t poff) {
    size_t npages = 0;
    uint64_t available = 0;
    physoff = poff;
-   for (size_t i = 0; i < MM_PHYSMEM_LAYOUT_SZ; i++) {
-      uint64_t maxaddr, minaddr;
-      if (layouts[i] == NULL)
-         continue;
-      minaddr = PGROUNDUP(layouts[i]->addr, PGSIZE);
-      maxaddr = PGROUNDDOWN(layouts[i]->addr + layouts[i]->len, PGSIZE);
-      physmem[i].addr = minaddr;
-      if (minaddr == 0) /* beginning of physical memory */
-         physmem[i].addr = PGROUNDUP(poff, PGSIZE);
-      physmem[i].len = maxaddr - minaddr;
-      available += physmem[i].len;
+   phys_mem = areas;
+   phys_mem_sz = sz;
+   for (size_t i = 0; i < phys_mem_sz; i++) {
+      uint64_t minaddr = PGROUNDUP(phys_mem[i].addr, PGSIZE);
+      if (minaddr == 0) { /* beginning of physical memory */
+         phys_mem[i].addr = PGROUNDUP(poff, PGSIZE);
+         phys_mem[i].used = PGROUNDUP(poff, PGSIZE);
+      }
+      available += phys_mem[i].len;
    }
    npages = available / PGSIZE;
    pr_debug("%d KiB available in physical memory\n", available / (1 << 10));
    pr_debug("%d pages available\n", npages);
-   init_mem_map(npages);
+   init_mem_map();
    bootstrap_page_allocator();
 }

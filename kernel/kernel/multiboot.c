@@ -2,6 +2,7 @@
 #include <std/stddef.h>
 #include <std/stdint.h>
 
+#include <lunaros/kernel.h>
 #include <lunaros/multiboot.h>
 #include <lunaros/mm.h>
 #include <lunaros/page.h>
@@ -13,40 +14,55 @@
 #define next_mmap_tag(m, t) \
    ((uint8_t *)m + ((struct multiboot_tag_mmap *)t)->entry_size)
 
-void multiboot_parse_mmap(unsigned long addr, physmem_layout_t **layouts) {
+size_t count_mem_available(uint64_t addr) {
+   multiboot_memory_map_t *mmap = NULL;
+   size_t areas_sz = 0;
    struct multiboot_tag *tag = (struct multiboot_tag *)(addr + 8);
-
-   if (addr & 7) {
-      printf("WARN Unaligned mbi\n");
-      return;
-   }
-
-   for (int idx = 0; tag->type != MULTIBOOT_TAG_TYPE_END; tag = next_tag(tag)) {
+   for (; tag->type != MULTIBOOT_TAG_TYPE_END; tag = next_tag(tag)) {
       if (tag->type != MULTIBOOT_TAG_TYPE_MMAP)
          continue;
-      multiboot_memory_map_t *mmap =
-          ((struct multiboot_tag_mmap *)tag)->entries;
+      mmap = ((struct multiboot_tag_mmap *)tag)->entries;
       while ((uint8_t *)mmap < ((uint8_t *)tag + tag->size)) {
-         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE &&
-               idx < MM_PHYSMEM_LAYOUT_SZ) {
-            layouts[idx] = (physmem_layout_t *)mmap;
-            idx++;
-         } else if (idx >= MM_PHYSMEM_LAYOUT_SZ) {
-            pr_debug("Dropping memory layout\n");
+         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE)
+            areas_sz++;
+         mmap = (multiboot_memory_map_t *)next_mmap_tag(mmap, tag);
+      }
+   }
+   return areas_sz;
+}
+
+void fill_area_info(uint64_t addr, mem_area_t *areas) {
+   multiboot_memory_map_t *mmap = NULL;
+   struct multiboot_tag *tag = (struct multiboot_tag *)(addr + 8);
+   for (size_t i = 0; tag->type != MULTIBOOT_TAG_TYPE_END; tag = next_tag(tag)) {
+      if (tag->type != MULTIBOOT_TAG_TYPE_MMAP)
+         continue;
+      mmap = ((struct multiboot_tag_mmap *)tag)->entries;
+      while ((uint8_t *)mmap < ((uint8_t *)tag + tag->size)) {
+         if (mmap->type == MULTIBOOT_MEMORY_AVAILABLE) {
+            areas[i].addr = mmap->addr;
+            ALIGN_TO(areas[i].addr, sizeof(uintmax_t));
+            areas[i].len = mmap->len;
+            i++;
          }
          mmap = (multiboot_memory_map_t *)next_mmap_tag(mmap, tag);
       }
    }
 }
 
-void multiboot_parse_info(unsigned long addr) {
+mem_area_t *multiboot_parse_mmap(uint64_t addr, size_t *sz) {
+   mem_area_t *areas = NULL;
+   size_t areas_sz = count_mem_available(addr);
+   areas = mm_reserved_alloc(areas_sz * sizeof(mem_area_t));
+   if (unlikely(areas == NULL))
+      panic("Not enough memory\n");
+   fill_area_info(addr, areas);
+   *sz = areas_sz;
+   return areas;
+}
+
+void multiboot_parse_info(uint64_t addr) {
    struct multiboot_tag *tag = (struct multiboot_tag *)(addr + 8);
-
-   if (addr & 7) {
-      printf("WARN Unaligned mbi\n");
-      return;
-   }
-
    for (; tag->type != MULTIBOOT_TAG_TYPE_END; tag = next_tag(tag)) {
       switch (tag->type) {
       case MULTIBOOT_TAG_TYPE_CMDLINE:

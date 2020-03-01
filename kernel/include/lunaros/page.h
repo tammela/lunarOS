@@ -6,24 +6,28 @@
 #define PGROUNDUP(sz, pgsz) (((sz) + pgsz - 1) & ~(pgsz - 1))
 #define PGROUNDDOWN(sz, pgsz) (((sz)) & ~(pgsz - 1))
 
-typedef struct physmem_layout_t physmem_layout_t;
-
-struct physmem_layout_t {
-   uint64_t addr;
-   uint64_t len;
-};
+typedef struct {
+   uint64_t base;       /* base to allocate memory from */
+   uint64_t addr;       /* area initial address */
+   uint64_t len;        /* total area length */
+   struct page *map;    /* area's page map */
+   size_t map_sz;       /* page map size */
+   size_t used;         /* used memory counter in bytes */
+   list_t buddies;      /* buddies in this area */
+} mem_area_t;
 
 void page_free(void *v);
 void *page_alloc(size_t npages);
-void page_init(physmem_layout_t **layouts, size_t poff);
+void page_init(mem_area_t *areas, size_t areas_sz, size_t poff);
 
 struct page {
-   struct page *next;
-   void *virtual;
-   uint8_t order;
+   struct page *next;   /* next page (used in slab) */
+   void *virtual;       /* page virtual mapping */
+   uint8_t order;       /* page buddy order */
 };
 
-struct page *pfn_to_page(uint64_t pfn);
+#define pfn(addr) (addr) / PGSIZE
+
 struct page *phys2page(void *addr);
 
 /* physical page type */
