@@ -3,13 +3,10 @@
 #include <std/stddef.h>
 
 #include <lunaros/list.h>
-#include <lunaros/page.h>
 
 typedef void *(*allocf_t)(size_t);
 
-typedef struct buddy_area_t buddy_area_t;
-
-struct buddy_area_t {
+typedef struct {
    void *base;          /* base address */
    uint8_t *tree;       /* bitwise binary tree */
    list_t *freelist;    /* buddy's freelist */
@@ -17,7 +14,7 @@ struct buddy_area_t {
    uint64_t max;        /* maximum allocation size */
    uint64_t available;  /* available memory in buddy */
    list_t head;         /* buddies list head */
-};
+} buddy_area_t;
 
 /* Tree walking macros */
 #define node_parent(i)          ((i - 1) / 2)
