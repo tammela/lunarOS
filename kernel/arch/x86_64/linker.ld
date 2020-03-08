@@ -33,17 +33,17 @@ SECTIONS
     *(.text)
   }
 
-  .rodata ALIGN (4K) : AT ( (LOADADDR (.text) + SIZEOF (.text) + 0xFFF) & 0xFFFFFFFFFFFFF000 )
+  .rodata ALIGN (4K) : AT ( (LOADADDR (.text) + SIZEOF (.text)) )
   {
     *(.rodata)
   }
 
-  .data ALIGN (4K) : AT ( (LOADADDR (.rodata) + SIZEOF (.rodata) + 0xFFF) & 0xFFFFFFFFFFFFF000 )
+  .data ALIGN (4K) : AT ( (LOADADDR (.rodata) + SIZEOF (.rodata)) )
   {
     *(.data)
   }
 
-  .bss ALIGN (4K) : AT ( (LOADADDR (.data) + SIZEOF (.data) + 0xFFF) & 0xFFFFFFFFFFFFF000 )
+  .bss ALIGN (4K) : AT ( (LOADADDR (.data) + SIZEOF (.data)) )
   {
     *(COMMON)
     *(.bss)
