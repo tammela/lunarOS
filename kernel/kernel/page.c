@@ -36,29 +36,34 @@ struct page *phys2page(void *addr) {
 }
 
 void *page_alloc(size_t npages) {
+   void *p;
    list_t *cursor;
    for (size_t i = 0; i < phys_mem_sz; i++) {
       list_for_each (cursor, &phys_mem[i].buddies) {
          buddy_area_t *b = container_of(cursor, buddy_area_t, head);
          if (b->available < PGSIZE * npages)
             continue;
-         return buddy_alloc(b, npages);
+         p = buddy_alloc(b, npages);
+         if (p) {
+            struct page *page = phys2page(p);
+            if (page == NULL)
+               panic("Address returned by buddy has no struct page\n");
+            page->buddy = b;
+         }
+         return p;
       }
    }
    return NULL;
 }
 
-void page_free(void *page) {
-   list_t *cursor;
-   uintptr_t addr = (uintptr_t)page;
-   for (size_t i = 0; i < phys_mem_sz; i++) {
-      list_for_each (cursor, &phys_mem[i].buddies) {
-         buddy_area_t *b = container_of(cursor, buddy_area_t, head);
-         uintptr_t base = (uintptr_t)b->base;
-         if (addr >= base && addr <= (base + b->max))
-            return buddy_free(b, page);
-      }
-   }
+void page_free(void *addr) {
+   struct page *page;
+   if (addr == NULL)
+      return;
+   page = phys2page(addr);
+   if (page == NULL)
+      panic("Address returned by buddy has no struct page\n");
+   buddy_free(page->buddy, addr);
 }
 
 #define BUDDY_MAX_SIZE  (1 << 19)   /* 512K */

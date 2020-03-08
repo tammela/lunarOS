@@ -23,7 +23,7 @@ void page_init(mem_area_t *areas, size_t areas_sz, size_t poff);
 
 struct page {
    struct page *next;   /* next page (used in slab) */
-   void *virtual;       /* page virtual mapping */
+   buddy_area_t *buddy; /* buddy that manages this page */
    uint8_t order;       /* page buddy order */
 };
 
