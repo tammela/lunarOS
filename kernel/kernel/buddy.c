@@ -62,6 +62,8 @@ void buddy_pushback(list_t *freelist, void *addr) {
 
 void *buddy_pop(list_t *freelist) {
    list_t *entry = list_pop(freelist);
+   if (entry == NULL)
+      return NULL;
    memset(entry, 0, sizeof(list_t));
    return (void *)entry;
 }
@@ -151,17 +153,16 @@ buddy_area_t *buddy_area_init(void *addr, size_t max, allocf_t alloc) {
       pr_err("Not enough memory for buddy");
       return NULL;
    }
-   memset(b, 0, sizeof(buddy_area_t));
    b->available = max;
    b->min = PGSIZE;
    b->max = max;
    b->base = addr;
-   b->tree = alloc((1 << buddy_max_bucket(b)) / sizeof(b->tree));
+   b->tree = alloc((1 << buddy_max_bucket(b)) / sizeof(uint8_t));
    if (unlikely(b->tree == NULL)) {
       pr_err("Not enough memory for buddy");
       return NULL;
    }
-   b->freelist = alloc(buddy_max_bucket(b) * sizeof(b->freelist));
+   b->freelist = alloc(buddy_max_bucket(b) * sizeof(list_t));
    if (unlikely(b->freelist == NULL)) {
       pr_err("Not enough memory for buddy");
       return NULL;

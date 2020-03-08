@@ -1,5 +1,6 @@
 #pragma once
 
+#include <lunaros/buddy.h>
 #include <lunaros/list.h>
 
 #define PGSIZE (4096)
