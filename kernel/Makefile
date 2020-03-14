@@ -16,7 +16,8 @@ include $(ARCHDIR)/Kbuild
 include $(KERNDIR)/Kbuild
 include $(LIBDIR)/Kbuild
 
-FOPS:= -mcmodel=large -ffreestanding -mno-red-zone -fno-builtin -fno-pie -no-pie -mgeneral-regs-only
+FOPS:= -mcmodel=large -ffreestanding -mno-red-zone -fno-builtin -fno-pie -no-pie -mgeneral-regs-only \
+	-fno-asynchronous-unwind-tables
 CFLAGS:= $(CFLAGS) $(FOPS) -nostdlib
 ASFLAGS:= $(CFLAGS) $(ASFLAGS)
 CPPFLAGS:= $(CPPFLAGS) -I$(INCLUDEDIR) -D_KERNEL -D__$(ARCH)__
