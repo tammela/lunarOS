@@ -1,10 +1,9 @@
 ENTRY(_start)
 
+CACHE_ALIGNMENT = 64;
+
 SECTIONS
 {
-   . = 4K;
-  _kernel_physical_start = .;
-
   .boottext ALIGN(4K) :
     {
       arch/x86_64/boot.o (.multiboot)
@@ -24,32 +23,62 @@ SECTIONS
       arch/x86_64/boot.o (COMMON)
     }
 
-  _boot_end = .;
-
+  __boot_end = .;
   . += 0xFFFF800000000000;
-  _kernel_virtual_start = .;
-  .text : AT(_boot_end)
+  __text_start = .;
+
+  .text ALIGN (4K) :
+   AT(__boot_end)
   {
     *(.text)
+    *(.text.*)
+    *(.stub)
   }
 
-  .rodata ALIGN (4K) : AT ( (LOADADDR (.text) + SIZEOF (.text)) )
+  __text_end = .;
+  __rodata_start = .;
+
+  .rodata ALIGN (4K) :
+   AT ((LOADADDR (.text) + SIZEOF (.text) + 0xFFF) & 0xFFFFFFFFFFFFF000)
   {
     *(.rodata)
+    *(.rodata.*)
+    . = ALIGN(CACHE_ALIGNMENT);
+    __CTOR_LIST__ = .;
+    *(.ctors)
+    __CTOR_END__ = .;
   }
 
-  .data ALIGN (4K) : AT ( (LOADADDR (.rodata) + SIZEOF (.rodata)) )
+  __rodata_end = .;
+  __data_start = .;
+
+  .data ALIGN (4K) :
+   AT ((LOADADDR (.rodata) + SIZEOF (.rodata) + 0xFFF) & 0xFFFFFFFFFFFFF000)
   {
     *(.data)
   }
-
-  .bss ALIGN (4K) : AT ( (LOADADDR (.data) + SIZEOF (.data)) )
+  .data.cacheline_aligned ALIGN (CACHE_ALIGNMENT) :
+   AT ((LOADADDR (.data) + SIZEOF(.data) + 0xFFF) & 0xFFFFFFFFFFFFF000)
   {
-    *(COMMON)
-    *(.bss)
+    *(.data.cacheline_aligned)
+  }
+  .data.read_mostly ALIGN (CACHE_ALIGNMENT) :
+   AT ((LOADADDR (.data.cacheline_aligned) + SIZEOF(.data.cacheline_aligned) + 0xFFF) & 0xFFFFFFFFFFFFF000)
+  {
+    *(.data.read_mostly)
   }
 
-  _kernel_virtual_end = .;
+  __data_end = .;
+  __bss_start = .;
 
-  _kernel_physical_end = (LOADADDR (.bss) + SIZEOF (.bss) + 0xFFF) & 0xFFFFFFFFFFFFF000;
+  .bss ALIGN (4K) :
+   AT ((LOADADDR (.data.read_mostly) + SIZEOF (.data.read_mostly) + 0xFFF) & 0xFFFFFFFFFFFFF000)
+  {
+    *(.bss)
+    *(.bss.*)
+    *(COMMON)
+  }
+
+  __bss_end = .;
+  __kernel_end = (LOADADDR (.bss) + SIZEOF (.bss) + 0xFFF) & 0xFFFFFFFFFFFFF000;
 }

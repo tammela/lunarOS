@@ -86,7 +86,7 @@ _boot_page_init:
 _boot_mmap_kernel:
    /* loop counters */
    movl $0, %ecx
-   movl $_kernel_physical_end, %esi
+   movl $__kernel_end, %esi
    /* We will initially map the kernel in 2MiB pages */
    /* %esi = npages */
    shrl $21, %esi
