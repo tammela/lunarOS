@@ -47,7 +47,7 @@ L2:
    movw %ax, %ss
 
    /* Reserved physical pages offset */
-   movq $_kernel_physical_end, %rdx
+   movq $__kernel_end, %rdx
 
    /* 2MiB virtual area */
    movq $pte, %rcx
