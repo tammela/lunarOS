@@ -31,8 +31,16 @@ void *vmm_virt2phys(void *addr) {
       panic("TODO");
 }
 
+void *vmm_virt2slab(void *addr) {
+   void *paddr = vmm_virt2phys(addr);
+   struct page *page = phys2page(paddr);
+   if (unlikely(page == NULL))
+      return NULL;
+   return page->slab;
+}
+
 void *vmm_phys2virt(void *addr) {
-   uintptr_t a = (uintptr_t)addr; /* for arithmetics */
+   uintptr_t a = (uintptr_t)addr;
    return (void *)(a + VMM_RESERVED_DM_START);
 }
 

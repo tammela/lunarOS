@@ -24,6 +24,7 @@ struct vmm_map_t {
 
 void *vmm_phys2virt(void *addr);
 void *vmm_virt2phys(void *addr);
+void *vmm_virt2slab(void *addr);
 
 /*
 ** Flush the entire TLB cache. Global pages are ignored.
