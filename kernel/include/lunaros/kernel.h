@@ -1,5 +1,6 @@
 #pragma once
 
+#include <std/stdint.h>
 #include <std/stddef.h>
 
 #include <lunaros/compiler.h>

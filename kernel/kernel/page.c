@@ -25,6 +25,8 @@ size_t phys_mem_sz = 0;
 
 struct page *phys2page(void *addr) {
    uintptr_t address = (uintptr_t)addr;
+   if (!address)
+      goto bad;
    for (size_t i = 0; i < phys_mem_sz; i++) {
       size_t map_index = 0;
       if (phys_mem[i].addr + phys_mem[i].len < address)
@@ -32,6 +34,23 @@ struct page *phys2page(void *addr) {
       map_index = pfn(address) - pfn(phys_mem[i].addr);
       return &phys_mem[i].map[map_index];
    }
+bad:
+   return NULL;
+}
+
+void *page2phys(struct page *page) {
+   uintptr_t address = (uintptr_t)page;
+   if (!address)
+      goto bad;
+   for (size_t i = 0; i < phys_mem_sz; i++) {
+      size_t offset = 0;
+      if (phys_mem[i].addr + phys_mem[i].len < address)
+         continue;
+      offset = (uintptr_t)page - (uintptr_t)phys_mem[i].map;
+      return (void *)((PGSIZE * offset / sizeof(struct page))
+               + phys_mem[i].addr);
+   }
+bad:
    return NULL;
 }
 

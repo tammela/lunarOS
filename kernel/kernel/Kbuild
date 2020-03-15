@@ -9,4 +9,5 @@ OBJS+= $(KERNDIR)/main.o \
        $(KERNDIR)/mm.o \
        $(KERNDIR)/vmm.o \
        $(KERNDIR)/buddy.o \
-       $(KERNDIR)/list.o
+       $(KERNDIR)/list.o \
+       $(KERNDIR)/slab.o
